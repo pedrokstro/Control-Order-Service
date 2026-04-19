@@ -57,7 +57,7 @@
                 <div class="form-check login-check d-none d-lg-none" id="biometriaCheckContainer">
                     <input type="checkbox" class="form-check-input" id="saveBiometria">
                     <label for="saveBiometria" class="form-check-label text-primary" style="cursor: pointer;">
-                        <i class="bi bi-fingerprint"></i> Usar Digital
+                        <i class="bi bi-phone"></i> Salvar Acesso Rápido (Dispositivo)
                     </label>
                 </div>
             </div>
@@ -67,7 +67,7 @@
                     ENTRAR
                 </button>
                 <button type="button" class="btn btn-outline-primary d-none d-lg-none align-items-center justify-content-center" id="btnBiometria">
-                    <i class="bi bi-fingerprint me-2" style="font-size: 1.2rem;"></i> ENTRAR COM A DIGITAL
+                    <i class="bi bi-phone me-2" style="font-size: 1.2rem;"></i> ENTRAR (ACESSO RÁPIDO)
                 </button>
             </div>
         </form>
@@ -247,33 +247,32 @@
                 
                 if (!credIdBase64 || !savedPwd) return;
 
-                const credIdBytes = Uint8Array.from(atob(credIdBase64), c => c.charCodeAt(0));
-                
                 try {
-                    btnBiometria.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> VERIFICANDO...';
+                    btnBiometria.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> VALIDANDO...';
                     
-                    // Pede a digital
-                    const assertion = await navigator.credentials.get({
-                        publicKey: {
-                            challenge: new Uint8Array(32),
-                            allowCredentials: [{
-                                id: credIdBytes,
-                                type: 'public-key',
-                                transports: ['internal']
-                            }],
-                            userVerification: "required"
+                    if (window.PublicKeyCredential && atob(credIdBase64) !== 'HTTP_FALLBACK') {
+                        const credIdBytes = Uint8Array.from(atob(credIdBase64), c => c.charCodeAt(0));
+                        const assertion = await navigator.credentials.get({
+                            publicKey: {
+                                challenge: new Uint8Array(32),
+                                allowCredentials: [{ id: credIdBytes, type: 'public-key', transports: ['internal'] }],
+                                userVerification: "required"
+                            }
+                        });
+                        
+                        if (assertion) {
+                            senhaInput.value = savedPwd;
+                            loginForm.submit();
                         }
-                    });
-
-                    if (assertion) {
-                        // Sucesso! Autopreencher e submeter
+                    } else {
+                        // Se não tem suporte WebAuthn (HTTP), faz login direto ao apertar o botão
                         senhaInput.value = savedPwd;
                         loginForm.submit();
                     }
                 } catch (err) {
                     console.error("Falha na biometria:", err);
-                    btnBiometria.innerHTML = '<i class="bi bi-fingerprint me-2" style="font-size: 1.2rem;"></i> ENTRAR COM A DIGITAL';
-                    if (window.BrutalistAnimations) window.BrutalistAnimations.showToast('Falha na autenticação biométrica.', 'danger');
+                    btnBiometria.innerHTML = '<i class="bi bi-phone me-2" style="font-size: 1.2rem;"></i> ENTRAR (ACESSO RÁPIDO)';
+                    if (window.BrutalistAnimations) window.BrutalistAnimations.showToast('Falha na autenticação.', 'danger');
                 }
             });
 
@@ -291,7 +290,16 @@
                         // Se não tem biometria cadastrada OU usuário mudou a senha/loja, cadastra
                         if (!localStorage.getItem('cos_bio_cred_id')) {
                             e.preventDefault(); // pausa envio
-                            submitButton.innerHTML = 'Habilitando Digital...';
+                            submitButton.innerHTML = 'Habilitando Acesso Rápido...';
+
+                            if (!window.PublicKeyCredential) {
+                                // Fallback em ambiente inseguro (HTTP)
+                                localStorage.setItem('cos_bio_cred_id', btoa('HTTP_FALLBACK'));
+                                localStorage.setItem('cos_bio_pwd', senhaInput.value);
+                                localStorage.setItem('cos_bio_loja', lojaInputHidden.value);
+                                loginForm.submit();
+                                return;
+                            }
                             
                             try {
                                 const credential = await navigator.credentials.create({

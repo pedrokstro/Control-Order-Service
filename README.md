@@ -32,8 +32,8 @@ Siga o passo a passo para executar este projeto em sua máquina local.
 
 **1. Clone o Repositório:**
 ```bash
-git clone https://github.com/SeuUsuario/COS-ControlOrderService.git
-cd COS-ControlOrderService
+git clone https://github.com/pedrokstro/Control-Order-Service.git
+cd Control-Order-Service
 ```
 
 **2. Configure as Variáveis de Ambiente:**

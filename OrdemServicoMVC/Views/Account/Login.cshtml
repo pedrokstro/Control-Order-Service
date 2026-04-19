@@ -54,7 +54,7 @@
                     <input asp-for="LembrarMe" type="checkbox" class="form-check-input" id="rememberMe">
                     <label asp-for="LembrarMe" class="form-check-label">Lembrar-me</label>
                 </div>
-                <div class="form-check login-check d-none" id="biometriaCheckContainer">
+                <div class="form-check login-check d-none d-lg-none" id="biometriaCheckContainer">
                     <input type="checkbox" class="form-check-input" id="saveBiometria">
                     <label for="saveBiometria" class="form-check-label text-primary" style="cursor: pointer;">
                         <i class="bi bi-fingerprint"></i> Usar Digital
@@ -66,7 +66,7 @@
                 <button type="submit" class="btn btn-primary login-submit" id="btnNormalLogin" data-login-submit>
                     ENTRAR
                 </button>
-                <button type="button" class="btn btn-outline-primary d-none align-items-center justify-content-center" id="btnBiometria">
+                <button type="button" class="btn btn-outline-primary d-none d-lg-none align-items-center justify-content-center" id="btnBiometria">
                     <i class="bi bi-fingerprint me-2" style="font-size: 1.2rem;"></i> ENTRAR COM A DIGITAL
                 </button>
             </div>

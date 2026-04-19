@@ -1,5 +1,9 @@
 # Changelog - Control Order Service (COS)
 
+## [2.3.27] - 2026-04-19
+### UI / UX
+- **Mobile Navbar:** O botão de "Sair" e "Perfil" tiveram suas posições invertidas na barra de navegação inferior mobile para condizer com o padrão ergonômico onde "Perfil" fica antes e o "Sair" fica no final, com coloração destacada de atenção.
+
 ## [2.3.26] - 2026-04-19
 ### Funcionalidades
 - **Login por Biometria/Digital:** Adicionada a opção "Usar Digital" diretamente na tela de Login. Através da API WebAuthn do navegador, usuários podem autenticar com Leitor de Impressão Digital (Android/iOS/Estações) sem precisar digitar a senha ou escolher a loja novamente. Totalmente sem senha (passwordless local shim).

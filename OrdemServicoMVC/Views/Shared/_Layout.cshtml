@@ -382,12 +382,12 @@
 
         <!-- Barra de navegação mobile -->
         <nav class="mobile-bottom-nav d-lg-none" aria-label="Menu principal móvel">
-            <form asp-controller="Account" asp-action="Logout" method="post" class="mobile-nav-item mobile-nav-item--logout" data-nav-route="/account/logout">
-                <button type="submit" class="mobile-nav-item__button">
-                    <i class="bi bi-box-arrow-right"></i>
-                    <span class="mobile-nav-label">Sair</span>
-                </button>
-            </form>
+            <a asp-controller="Account" asp-action="Profile"
+               class="mobile-nav-item"
+               data-nav-route="/account/profile">
+                <i class="bi bi-person-circle"></i>
+                <span class="mobile-nav-label">Perfil</span>
+            </a>
             <a href="@Url.Action("Index", "OrdemServico")"
                class="mobile-nav-item"
                data-nav-route="/ordemservico/index">
@@ -451,12 +451,12 @@
                     </ul>
                 </div>
             }
-            <a asp-controller="Account" asp-action="Profile"
-               class="mobile-nav-item"
-               data-nav-route="/account/profile">
-                <i class="bi bi-person-circle"></i>
-                <span class="mobile-nav-label">Perfil</span>
-            </a>
+            <form asp-controller="Account" asp-action="Logout" method="post" class="mobile-nav-item mobile-nav-item--logout" data-nav-route="/account/logout">
+                <button type="submit" class="mobile-nav-item__button">
+                    <i class="bi bi-box-arrow-right text-danger"></i>
+                    <span class="mobile-nav-label text-danger">Sair</span>
+                </button>
+            </form>
         </nav>
         <div class="mobile-bottom-nav-space d-lg-none"></div>
 

@@ -49,16 +49,25 @@
                 <span asp-validation-for="Senha" class="text-danger"></span>
             </div>
 
-            <div class="login-options">
+            <div class="login-options d-flex justify-content-between mb-3">
                 <div class="form-check login-check">
                     <input asp-for="LembrarMe" type="checkbox" class="form-check-input" id="rememberMe">
                     <label asp-for="LembrarMe" class="form-check-label">Lembrar-me</label>
                 </div>
+                <div class="form-check login-check d-none" id="biometriaCheckContainer">
+                    <input type="checkbox" class="form-check-input" id="saveBiometria">
+                    <label for="saveBiometria" class="form-check-label text-primary" style="cursor: pointer;">
+                        <i class="bi bi-fingerprint"></i> Usar Digital
+                    </label>
+                </div>
             </div>
 
-            <div class="d-grid">
-                <button type="submit" class="btn btn-primary login-submit" data-login-submit>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary login-submit" id="btnNormalLogin" data-login-submit>
                     ENTRAR
+                </button>
+                <button type="button" class="btn btn-outline-primary d-none align-items-center justify-content-center" id="btnBiometria">
+                    <i class="bi bi-fingerprint me-2" style="font-size: 1.2rem;"></i> ENTRAR COM A DIGITAL
                 </button>
             </div>
         </form>
@@ -205,12 +214,124 @@
                 }
             });
 
+            // --- INÍCIO LÓGICA BIOMETRIA ---
+            const biometriaCheckContainer = document.getElementById('biometriaCheckContainer');
+            const saveBiometria = document.getElementById('saveBiometria');
+            const btnBiometria = document.getElementById('btnBiometria');
+            const senhaInput = document.getElementById('Senha');
+            const lojaInputHidden = document.querySelector('input[type="hidden"][name="LojaUsuario"]');
+            
+            // Verifica se o aparelho suporta biometria WebAuthn
+            if (window.PublicKeyCredential) {
+                biometriaCheckContainer.classList.remove('d-none');
+                
+                // Se o usuário já tiver uma digital cadastrada para o sistema localmente
+                if (localStorage.getItem('cos_bio_cred_id') && localStorage.getItem('cos_bio_pwd')) {
+                    btnBiometria.classList.remove('d-none');
+                    btnBiometria.classList.add('d-flex');
+                    saveBiometria.checked = true;
+                    
+                    // Pré-seleciona a loja salva
+                    const savedLoja = localStorage.getItem('cos_bio_loja');
+                    if (savedLoja) {
+                        const savedOption = Array.from(options).find(opt => opt.dataset.value === savedLoja);
+                        if (savedOption) updateValue(savedOption);
+                    }
+                }
+            }
+            
+            // Trigger da biometria
+            btnBiometria?.addEventListener('click', async () => {
+                const credIdBase64 = localStorage.getItem('cos_bio_cred_id');
+                const savedPwd = localStorage.getItem('cos_bio_pwd');
+                
+                if (!credIdBase64 || !savedPwd) return;
+
+                const credIdBytes = Uint8Array.from(atob(credIdBase64), c => c.charCodeAt(0));
+                
+                try {
+                    btnBiometria.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> VERIFICANDO...';
+                    
+                    // Pede a digital
+                    const assertion = await navigator.credentials.get({
+                        publicKey: {
+                            challenge: new Uint8Array(32),
+                            allowCredentials: [{
+                                id: credIdBytes,
+                                type: 'public-key',
+                                transports: ['internal']
+                            }],
+                            userVerification: "required"
+                        }
+                    });
+
+                    if (assertion) {
+                        // Sucesso! Autopreencher e submeter
+                        senhaInput.value = savedPwd;
+                        loginForm.submit();
+                    }
+                } catch (err) {
+                    console.error("Falha na biometria:", err);
+                    btnBiometria.innerHTML = '<i class="bi bi-fingerprint me-2" style="font-size: 1.2rem;"></i> ENTRAR COM A DIGITAL';
+                    if (window.BrutalistAnimations) window.BrutalistAnimations.showToast('Falha na autenticação biométrica.', 'danger');
+                }
+            });
+
+            // Intercepta o login normal para registrar biometria se marcado
             if (loginForm && submitButton) {
-                loginForm.addEventListener('submit', () => {
+                loginForm.addEventListener('submit', async (e) => {
                     if (!loginForm.checkValidity()) {
                         submitButton.classList.remove('is-animating');
                         submitButton.removeAttribute('disabled');
                         return;
+                    }
+
+                    // Se usar digital está marcado e ainda não registrado ou precisa recadastrar senha
+                    if (saveBiometria.checked) {
+                        // Se não tem biometria cadastrada OU usuário mudou a senha/loja, cadastra
+                        if (!localStorage.getItem('cos_bio_cred_id')) {
+                            e.preventDefault(); // pausa envio
+                            submitButton.innerHTML = 'Habilitando Digital...';
+                            
+                            try {
+                                const credential = await navigator.credentials.create({
+                                    publicKey: {
+                                        challenge: new Uint8Array(32),
+                                        rp: { name: "Control Order Service", id: window.location.hostname },
+                                        user: {
+                                            id: new Uint8Array(16),
+                                            name: "usuario_cos",
+                                            displayName: "Colaborador COS"
+                                        },
+                                        pubKeyCredParams: [{alg: -7, type: "public-key"}, {alg: -257, type: "public-key"}],
+                                        authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
+                                        timeout: 60000
+                                    }
+                                });
+                                
+                                const idBase64 = btoa(String.fromCharCode.apply(null, new Uint8Array(credential.rawId)));
+                                localStorage.setItem('cos_bio_cred_id', idBase64);
+                                localStorage.setItem('cos_bio_pwd', senhaInput.value);
+                                localStorage.setItem('cos_bio_loja', lojaInputHidden.value);
+                                
+                                loginForm.submit(); // Retoma envio
+                            } catch(err) {
+                                console.error('Erro na criação de biometria', err);
+                                // Mesmo falhando a biometria, submete pra não travar o usuário
+                                localStorage.removeItem('cos_bio_cred_id');
+                                loginForm.submit();
+                            }
+                            return;
+                        } else {
+                            // Já tem biometria, só atualiza os dados em cache de senha (caso tenha trocado) e loja
+                            localStorage.setItem('cos_bio_pwd', senhaInput.value);
+                            localStorage.setItem('cos_bio_loja', lojaInputHidden.value);
+                        }
+                    } else {
+                        // Se desmarcou, limpa biometrias antigas
+                        localStorage.removeItem('cos_bio_cred_id');
+                        localStorage.removeItem('cos_bio_pwd');
+                        localStorage.removeItem('cos_bio_loja');
                     }
 
                     submitButton.classList.add('is-animating');

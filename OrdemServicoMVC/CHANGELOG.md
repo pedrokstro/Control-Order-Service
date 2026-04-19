@@ -1,5 +1,9 @@
 # Changelog - Control Order Service (COS)
 
+## [2.3.26] - 2026-04-19
+### Funcionalidades
+- **Login por Biometria/Digital:** Adicionada a opção "Usar Digital" diretamente na tela de Login. Através da API WebAuthn do navegador, usuários podem autenticar com Leitor de Impressão Digital (Android/iOS/Estações) sem precisar digitar a senha ou escolher a loja novamente. Totalmente sem senha (passwordless local shim).
+
 ## [2.3.25] - 2026-04-19
 ### UI / UX & Funcionalidades
 - **Câmera Nativa:** Novo atalho "Usar Câmera" implementado no formulário de Nova Ordem, visível de forma exclusiva no mobile (`capture="environment"`). A lógica de envio também foi refatorada e agora permite tirar múltiplas fotos ou vídeos consecutivos sem que o envio sobrescreva as mídias selecionadas anteriormente.

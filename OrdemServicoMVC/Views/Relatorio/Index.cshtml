@@ -1,0 +1,323 @@
+@model OrdemServicoMVC.ViewModels.RelatorioFiltroViewModel
+@{
+    ViewData["Title"] = "Relatórios Personalizáveis";
+}
+
+<div class="container-fluid">
+    <!-- Cabeçalho da página -->
+    <div class="card report-card">
+        <div class="report-card__header">
+            <div class="management-header__titles" style="gap:0.5rem;">
+                <a asp-controller="OrdemServico" asp-action="Index" class="btn btn-outline-secondary d-flex align-items-center">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Voltar
+                </a>
+                <div>
+                    <h4 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Relatórios Personalizáveis</h4>
+                    <small class="text-muted">Configure filtros e gere relatórios prontos para compartilhamento</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body report-grid">
+            <!-- Formulário de filtros -->
+            <form asp-action="Gerar" method="post" id="formRelatorio">
+                <div class="report-grid">
+                    <!-- Filtros de período -->
+                    <div class="report-card">
+                        <div class="report-card__header">
+                            <i class="fas fa-calendar text-primary"></i>
+                            <h6>Período</h6>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-12 col-sm-6">
+                                <label asp-for="DataInicio" class="form-label">Data Inicial</label>
+                                <input asp-for="DataInicio" class="form-control" type="date" lang="pt-BR" />
+                                <span asp-validation-for="DataInicio" class="text-danger"></span>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <label asp-for="DataFim" class="form-label">Data Final</label>
+                                <input asp-for="DataFim" class="form-control" type="date" lang="pt-BR" />
+                                <span asp-validation-for="DataFim" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <small class="text-muted">Períodos rápidos:</small>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setPeriodo(7)">Últimos 7 dias</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setPeriodo(30)">Últimos 30 dias</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setPeriodoMesAtual()">Mês atual</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setPeriodoMesAnterior()">Mês anterior</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Filtros de categorização -->
+                    <div class="report-card">
+                        <div class="report-card__header">
+                            <i class="fas fa-filter text-success"></i>
+                            <h6>Filtros</h6>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-12 col-sm-6">
+                                <label asp-for="Status" class="form-label">Status</label>
+                                <select asp-for="Status" asp-items="Model.StatusList" class="filter-dropdown"></select>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <label asp-for="Prioridade" class="form-label">Prioridade</label>
+                                <select asp-for="Prioridade" asp-items="Model.PrioridadeList" class="filter-dropdown"></select>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <label asp-for="TecnicoId" class="form-label">Técnico</label>
+                                <select asp-for="TecnicoId" asp-items="Model.TecnicosList" class="filter-dropdown"></select>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <label asp-for="Loja" class="form-label">Loja</label>
+                                <select asp-for="Loja" asp-items="Model.LojasList" class="filter-dropdown"></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Seção de exportação -->
+                <div class="report-card mt-3">
+                    <div class="report-card__header">
+                        <i class="fas fa-download text-warning"></i>
+                        <h6>Exportação</h6>
+                    </div>
+                    <div class="row g-3 align-items-end">
+                        <div class="col-12 col-md-3">
+                            <label asp-for="TipoExportacao" class="form-label">Formato</label>
+                            <select asp-for="TipoExportacao" class="filter-dropdown">
+                                <option value="excel">Exportar para Excel</option>
+                                <option value="pdf">Exportar para PDF</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-9">
+                            <div class="report-actions">
+                                <button type="submit" class="btn btn-apply-filters">
+                                    <i class="fas fa-play me-2"></i>
+                                    Gerar Relatório
+                                </button>
+                                <button type="button" class="btn btn-clear-filters" onclick="limparFiltros()">
+                                    <i class="fas fa-eraser me-2"></i>
+                                    Limpar
+                                </button>
+                                <button type="button" class="btn btn-info" onclick="salvarFiltros()">
+                                    <i class="fas fa-save me-2"></i>
+                                    Salvar
+                                </button>
+                                <button type="button" class="btn btn-outline-info" onclick="carregarFiltros()">
+                                    <i class="fas fa-upload me-2"></i>
+                                    Carregar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dicas de uso -->
+                <div class="alert alert-info report-tips mt-3">
+                    <h6 class="text-dark">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Dicas de uso
+                    </h6>
+                    <ul class="mb-0">
+                        <li><strong>Período:</strong> Use os botões rápidos ou selecione datas específicas.</li>
+                        <li><strong>Filtros:</strong> Combine múltiplos filtros para relatórios precisos.</li>
+                        <li><strong>Excel:</strong> Ideal para análises detalhadas.</li>
+                        <li><strong>PDF:</strong> Ótimo para apresentações e arquivamento.</li>
+                        <li><strong>Automação:</strong> Salve seus filtros favoritos.</li>
+                    </ul>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts para funcionalidades extras -->
+@section Scripts {
+    <style>
+        /* CSS para forçar a exibição correta das datas com barras separadoras */
+        input[type="date"] {
+            position: relative;
+        }
+        
+        /* Força o formato brasileiro nos campos de data */
+        input[type="date"]::-webkit-datetime-edit {
+            padding: 0;
+        }
+        
+        input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+            background: transparent;
+        }
+        
+        input[type="date"]::-webkit-datetime-edit-text {
+            color: #495057;
+            padding: 0 0.3em;
+        }
+        
+        input[type="date"]::-webkit-datetime-edit-month-field,
+        input[type="date"]::-webkit-datetime-edit-day-field,
+        input[type="date"]::-webkit-datetime-edit-year-field {
+            color: #495057;
+        }
+        
+        /* Placeholder personalizado para mostrar o formato */
+        input[type="date"]:invalid::-webkit-datetime-edit {
+            color: #6c757d;
+        }
+        
+        input[type="date"]:focus::-webkit-datetime-edit {
+            color: #495057;
+        }
+    </style>
+    
+    <script>
+        // Configuração para formato de data brasileiro (DD/MM/YYYY)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configura os campos de data para formato brasileiro
+            const dateInputs = document.querySelectorAll('input[type="date"]');
+            dateInputs.forEach(function(input) {
+                // Define a localização para português brasileiro
+                input.setAttribute('lang', 'pt-BR');
+                
+                // Adiciona placeholder personalizado
+                input.setAttribute('placeholder', 'dd/mm/aaaa');
+                
+                // Adiciona evento para formatar a exibição da data
+                input.addEventListener('input', function(e) {
+                    // O valor interno permanece no formato ISO (YYYY-MM-DD) para compatibilidade
+                    // mas a exibição será formatada pelo navegador conforme a localização
+                });
+                
+                // Adiciona evento para mostrar formato quando vazio
+                input.addEventListener('blur', function(e) {
+                    if (!e.target.value) {
+                        e.target.setAttribute('data-placeholder', 'dd/mm/aaaa');
+                    }
+                });
+            });
+        });
+        
+        // Função para definir período em dias
+        function setPeriodo(dias) {
+            const hoje = new Date();
+            const dataInicio = new Date(hoje.getTime() - (dias * 24 * 60 * 60 * 1000));
+            
+            document.getElementById('DataInicio').value = dataInicio.toISOString().split('T')[0];
+            document.getElementById('DataFim').value = hoje.toISOString().split('T')[0];
+        }
+        
+        // Função para definir mês atual
+        function setPeriodoMesAtual() {
+            const hoje = new Date();
+            const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+            const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+            
+            document.getElementById('DataInicio').value = primeiroDia.toISOString().split('T')[0];
+            document.getElementById('DataFim').value = ultimoDia.toISOString().split('T')[0];
+        }
+        
+        // Função para definir mês anterior
+        function setPeriodoMesAnterior() {
+            const hoje = new Date();
+            const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+            const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth(), 0);
+            
+            document.getElementById('DataInicio').value = primeiroDia.toISOString().split('T')[0];
+            document.getElementById('DataFim').value = ultimoDia.toISOString().split('T')[0];
+        }
+        
+        // Função para limpar todos os filtros
+        function limparFiltros() {
+            document.getElementById('formRelatorio').reset();
+        }
+        
+        // Função para salvar filtros no localStorage
+        function salvarFiltros() {
+            const filtros = {
+                dataInicio: document.getElementById('DataInicio').value,
+                dataFim: document.getElementById('DataFim').value,
+                status: document.getElementById('Status').value,
+                prioridade: document.getElementById('Prioridade').value,
+                tecnicoId: document.getElementById('TecnicoId').value,
+                loja: document.getElementById('Loja').value,
+                tipoExportacao: document.getElementById('TipoExportacao').value
+            };
+            
+            localStorage.setItem('relatorioFiltros', JSON.stringify(filtros));
+            
+            // Mostra mensagem de sucesso
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show';
+            alert.innerHTML = `
+                <i class="fas fa-check me-2"></i>
+                Filtros salvos com sucesso!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.querySelector('.container-fluid').insertBefore(alert, document.querySelector('.card'));
+            
+            // Remove a mensagem após 3 segundos
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 3000);
+        }
+        
+        // Função para carregar filtros do localStorage
+        function carregarFiltros() {
+            const filtrosSalvos = localStorage.getItem('relatorioFiltros');
+            
+            if (filtrosSalvos) {
+                const filtros = JSON.parse(filtrosSalvos);
+                
+                document.getElementById('DataInicio').value = filtros.dataInicio || '';
+                document.getElementById('DataFim').value = filtros.dataFim || '';
+                document.getElementById('Status').value = filtros.status || '';
+                document.getElementById('Prioridade').value = filtros.prioridade || '';
+                document.getElementById('TecnicoId').value = filtros.tecnicoId || '';
+                document.getElementById('Loja').value = filtros.loja || '';
+                document.getElementById('TipoExportacao').value = filtros.tipoExportacao || '';
+                
+                // Mostra mensagem de sucesso
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-info alert-dismissible fade show';
+                alert.innerHTML = `
+                    <i class="fas fa-upload me-2"></i>
+                    Filtros carregados com sucesso!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                
+                document.querySelector('.container-fluid').insertBefore(alert, document.querySelector('.card'));
+                
+                // Remove a mensagem após 3 segundos
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                }, 3000);
+            } else {
+                // Mostra mensagem de aviso
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-warning alert-dismissible fade show';
+                alert.innerHTML = `
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Nenhum filtro salvo encontrado.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                
+                document.querySelector('.container-fluid').insertBefore(alert, document.querySelector('.card'));
+                
+                // Remove a mensagem após 3 segundos
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                }, 3000);
+            }
+        }
+    </script>
+}

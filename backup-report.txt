@@ -1,0 +1,27 @@
+﻿========================================
+RELATORIO DE BACKUP - COS PROJECT
+========================================
+
+Data/Hora: 06/02/2026 09:48:12
+Projeto: COS - Control Order Service
+Origem: F:\CURSOR\COS-Control Order Service
+Destino: C:\Backups\COS-Backup\COS-Backup_20260206_094807
+
+ESTATISTICAS:
+- Arquivos copiados: 1400
+- Itens ignorados: 92
+- Banco de dados: Nao incluido
+- Compactacao: Desativada
+
+PASTAS EXCLUIDAS:
+bin, obj, .vs, logs, backup_*, publish, node_modules, tmp, .git
+
+TIPOS DE ARQUIVO EXCLUIDOS:
+*.log, *.tmp, *.cache, *.user, *.suo, *.db-shm, *.db-wal
+
+OBSERVACOES:
+- Backup criado com sucesso
+- Verifique a integridade dos arquivos importantes
+- Mantenha este backup em local seguro
+
+========================================

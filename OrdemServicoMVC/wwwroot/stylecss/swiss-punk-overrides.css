@@ -1,0 +1,600 @@
+/**
+ * SWISS PUNK OVERRIDES
+ * Apply Swiss Punk style to existing components
+ */
+
+/* ===== REMOVE BRUTALIST STYLES ===== */
+.modal-backdrop,
+.modal-backdrop-blur,
+.content-blur {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: rgba(0, 0, 0, 0.85) !important;
+}
+
+/* ===== SWISS PUNK NAVBAR ===== */
+.navbar {
+    background: var(--swiss-black, #000) !important;
+    border-bottom: var(--swiss-border-ultra, 4px) solid var(--swiss-red, #FF0000) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 1rem 0 !important;
+}
+
+.navbar-brand {
+    font-family: var(--font-helvetica, 'Helvetica Neue', sans-serif) !important;
+    font-weight: var(--weight-bold, 700) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+}
+
+.user-info {
+    font-family: var(--font-helvetica, 'Helvetica Neue', sans-serif) !important;
+    font-size: var(--text-sm, 0.875rem) !important;
+    color: var(--swiss-white, #fff) !important;
+    border: var(--swiss-border-medium, 2px) solid var(--swiss-white, #fff) !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 0 !important;
+}
+
+/* ===== SWISS PUNK BUTTONS ===== */
+.btn,
+.modern-btn,
+.btn-primary,
+.btn-config,
+.btn-logout,
+.btn-install-pwa {
+    font-family: var(--font-helvetica, 'Helvetica Neue', sans-serif) !important;
+    font-weight: var(--weight-bold, 700) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+    border-radius: 0 !important;
+    border: var(--swiss-border-medium, 2px) solid var(--swiss-black, #000) !important;
+    padding: 0.75rem 1.5rem !important;
+    transition: all var(--transition-fast, 150ms) ease !important;
+    box-shadow: none !important;
+}
+
+.btn-primary,
+.btn-config,
+.btn-install-pwa {
+    background: var(--swiss-red, #FF0000) !important;
+    color: var(--swiss-white, #fff) !important;
+    border-color: var(--swiss-black, #000) !important;
+}
+
+.btn-primary:hover,
+.btn-config:hover,
+.btn-install-pwa:hover {
+    background: var(--swiss-red-dark, #CC0000) !important;
+}
+
+.btn-primary:active,
+.btn-config:active {
+    transform: translateY(1px) !important;
+}
+
+.btn-logout,
+.btn-danger {
+    background: var(--swiss-black, #000) !important;
+    color: var(--swiss-white, #fff) !important;
+    border-color: var(--swiss-red, #FF0000) !important;
+}
+
+.btn-logout:hover,
+.btn-danger:hover {
+    background: var(--swiss-gray-700, #333) !important;
+}
+
+.btn-outline-primary,
+.btn-outline-secondary {
+    background: var(--swiss-white, #fff) !important;
+    color: var(--swiss-black, #000) !important;
+    border: var(--swiss-border-medium, 2px) solid var(--swiss-black, #000) !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-secondary:hover {
+    background: var(--swiss-black, #000) !important;
+    color: var(--swiss-white, #fff) !important;
+}
+
+/* ===== SWISS PUNK CARDS ===== */
+.modern-card,
+.order-detail-card,
+.order-mobile-card,
+.filter-card {
+    background: var(--swiss-white, #fff) !important;
+    border: var(--swiss-border-medium, 2px) solid var(--swiss-black, #000) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    transition: box-shadow var(--transition-base, 250ms) ease !important;
+}
+
+.modern-card:hover,
+.order-detail-card:hover,
+.order-mobile-card:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.main-card {
+    border: var(--swiss-border-thick, 3px) solid var(--swiss-black, #000) !important;
+}
+
+/* ===== SWISS PUNK TABLES ===== */
+.modern-table {
+    border: var(--swiss-border-medium, 2px) solid var(--swiss-black, #000) !important;
+    border-collapse: collapse !important;
+}
+
+.modern-table-header {
+    background: var(--swiss-black, #000) !important;
+    color: var(--swiss-white, #fff) !important;
+}
+
+.modern-table-header th {
+    font-family: var(--font-helvetica, 'Helvetica Neue', sans-serif) !important;
+    font-weight: var(--weight-bold, 700) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+    padding: 1rem !important;
+    border-bottom: var(--swiss-border-medium, 2px) solid var(--swiss-black, #000) !important;
+}
+
+.modern-table tbody tr {
+    border-bottom: var(--swiss-border-thin, 1px) solid var(--swiss-gray-200, #E0E0E0) !important;
+    transition: background var(--transition-fast, 150ms) ease !important;
+}
+
+.modern-table tbody tr:hover {
+    background: var(--swiss-gray-100, #F5F5F5) !important;
+    transform: none !important;
+}
+
+.modern-table tbody tr.ordem-alta-prioridade {
+    background: rgba(255, 0, 0, 0.05) !important;
+    border-left: var(--swiss-border-ultra, 4px) solid var(--swiss-red, #FF0000) !important;
+}
+
+.modern-table tbody tr.ordem-alta-prioridade:hover {
+    background: rgba(255, 0, 0, 0.1) !important;
+}
+
+/* ===== SWISS PUNK BADGES ===== */
+.brutal-badge,
+.os-badge,
+.badge,
+.order-mobile-chip,
+.chip-prioridade-alta,
+.chip-prioridade-media,
+.chip-prioridade-baixa,
+.chip-status-open,
+.chip-status-progress,
+.chip-status-done {
+    font-family: var(--font-helvetica, 'Helvetica Neue', sans-serif) !important;
+    font-weight: var(--weight-bold, 700) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    border-radius: 0 !important;
+    border: var(--swiss-border-thin, 1px) solid var(--swiss-black, #000) !important;
+    padding: 0.15rem 0.5rem !important;
+    font-size: 0.7rem !important;
+    line-height: 1.2 !important;
+}
+
+.chip-prioridade-alta,
+.badge-prioridade-alta {
+    background: var(--swiss-red, #FF0000) !important;
+    color: var(--swiss-white, #fff) !important;
+    border-color: var(--swiss-black, #000) !important;
+}
+
+.chip-prioridade-media,
+.badge-prioridade-media {
+    background: var(--swiss-yellow, #FFD700) !important;
+    color: var(--swiss-black, #000) !important;
+    border-color: var(--swiss-black, #000) !important;
+}
+
+.chip-prioridade-baixa,
+.badge-prioridade-baixa {
+    background: var(--swiss-white, #fff) !important;
+    color: var(--swiss-black, #000) !important;
+    border-color: var(--swiss-black, #000) !important;
+}
+
+.chip-status-open {
+    background: var(--swiss-yellow, #FFD700) !important;
+    color: var(--swiss-black, #000) !important;
+}
+
+.chip-status-progress {
+    background: var(--swiss-black, #000) !important;
+    color: var(--swiss-white, #fff) !important;
+}
+
+.chip-status-done {
+    background: var(--swiss-green, #00FF00) !important;
+    color: var(--swiss-black, #000) !important;
+}
+
+/* ===== SWISS PUNK FORMS ===== */
+.form-control,
+.form-select,
+.form-control-modern,
+.form-select-modern,
+.brutal-input {
+    font-family: var(--font-helvetica, 'Helvetica Neue', sans-serif) !important;
+    border: var(--swiss-border-thin, 1px) solid var(--swiss-black, #000) !important;
+    border-radius: 0 !important;
+    padding: 0.5rem 0.75rem !important;
+    transition: border-color var(--transition-fast, 150ms) ease !important;
+    font-size: 0.875rem !important;
+}
+
+/* Dropdowns menores para seleção de técnico/status/prioridade */
+.form-select-sm,
+.prioridade-dropdown,
+.tecnico-dropdown,
+.status-dropdown {
+    padding: 0.35rem 0.5rem !important;
+    font-size: 0.8rem !important;
+    min-height: auto !important;
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-control-modern:focus,
+.form-select-modern:focus,
+.brutal-input:focus {
+    outline: none !important;
+    border-color: var(--swiss-red, #FF0000) !important;
+    border-width: var(--swiss-border-medium, 2px) !important;
+    box-shadow: none !important;
+}
+
+/* ===== SWISS PUNK MOBILE NAV ===== */
+.mobile-bottom-nav {
+    background: var(--swiss-black, #000) !important;
+    border-top: var(--swiss-border-ultra, 4px) solid var(--swiss-red, #FF0000) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.mobile-nav-item {
+    color: var(--swiss-gray-300, #CCC) !important;
+    font-family: var(--font-helvetica, 'Helvetica Neue', sans-serif) !important;
+    font-weight: var(--weight-bold, 700) !important;
+    text-transform: uppercase !important;
+    font-size: 0.65rem !important;
+}
+
+.mobile-nav-item.is-active,
+.mobile-nav-item:hover {
+    color: var(--swiss-red, #FF0000) !important;
+}
+
+.mobile-nav-fab {
+    background: var(--swiss-red, #FF0000) !important;
+    border: var(--swiss-border-medium, 2px) solid var(--swiss-black, #000) !important;
+    border-radius: 0 !important;
+    width: 56px !important;
+    height: 56px !important;
+    box-shadow: none !important;
+}
+
+.mobile-nav-badge {
+    background: var(--swiss-red, #FF0000) !important;
+    border: var(--swiss-border-thin, 1px) solid var(--swiss-black, #000) !important;
+    border-radius: 0 !important;
+    font-family: var(--font-helvetica, 'Helvetica Neue', sans-serif) !important;
+    font-weight: var(--weight-bold, 700) !important;
+}
+
+/* ===== SWISS PUNK DROPDOWNS ===== */
+.dropdown-menu {
+    background: var(--swiss-white, #fff) !important;
+    border: var(--swiss-border-medium, 2px) solid var(--swiss-black, #000) !important;
+    border-radius: 0 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    padding: 0 !important;
+}
+
+.dropdown-item {
+    font-family: var(--font-helvetica, 'Helvetica Neue', sans-serif) !important;
+    padding: 0.75rem 1.25rem !important;
+    border-bottom: var(--swiss-border-thin, 1px) solid var(--swiss-gray-200, #E0E0E0) !important;
+    transition: background var(--transition-fast, 150ms) ease !important;
+}
+
+.dropdown-item:hover {
+    background: var(--swiss-gray-100, #F5F5F5) !important;
+    color: var(--swiss-black, #000) !important;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none !important;
+}
+
+.dropdown-divider {
+    border-top: var(--swiss-border-medium, 2px) solid var(--swiss-red, #FF0000) !important;
+    margin: 0 !important;
+}
+
+/* ===== SWISS PUNK ALERTS ===== */
+.alert {
+    border: var(--swiss-border-medium, 2px) solid var(--swiss-black, #000) !important;
+    border-radius: 0 !important;
+    font-family: var(--font-helvetica, 'Helvetica Neue', sans-serif) !important;
+    box-shadow: none !important;
+}
+
+.alert-success {
+    background: var(--swiss-green, #00FF00) !important;
+    color: var(--swiss-black, #000) !important;
+}
+
+.alert-danger {
+    background: var(--swiss-red, #FF0000) !important;
+    color: var(--swiss-white, #fff) !important;
+}
+
+.alert-warning {
+    background: var(--swiss-yellow, #FFD700) !important;
+    color: var(--swiss-black, #000) !important;
+}
+
+/* ===== SWISS PUNK FAB CHAT ===== */
+.fab-chat {
+    background: var(--swiss-red, #FF0000) !important;
+    border: var(--swiss-border-medium, 2px) solid var(--swiss-black, #000) !important;
+    border-radius: 0 !important;
+    width: 60px !important;
+    height: 60px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transition: all var(--transition-base, 250ms) ease !important;
+}
+
+.fab-chat:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.fab-panel {
+    background: var(--swiss-white, #fff) !important;
+    border: var(--swiss-border-thick, 3px) solid var(--swiss-black, #000) !important;
+    border-radius: 0 !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.fab-panel-header {
+    background: var(--swiss-black, #000) !important;
+    color: var(--swiss-white, #fff) !important;
+    border-bottom: var(--swiss-border-medium, 2px) solid var(--swiss-red, #FF0000) !important;
+}
+
+.fab-panel-title {
+    font-family: var(--font-helvetica, 'Helvetica Neue', sans-serif) !important;
+    font-weight: var(--weight-bold, 700) !important;
+    text-transform: uppercase !important;
+}
+
+/* ===== SWISS PUNK DASHBOARD METRICS ===== */
+.dashboard-performance {
+    border: var(--swiss-border-medium, 2px) solid var(--swiss-black, #000) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: var(--swiss-white, #fff) !important;
+}
+
+.metric-item {
+    border: var(--swiss-border-thin, 1px) solid var(--swiss-black, #000) !important;
+    border-radius: 0 !important;
+    background: var(--swiss-white, #fff) !important;
+    transition: box-shadow var(--transition-base, 250ms) ease !important;
+}
+
+.metric-item:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.metric-value {
+    font-family: var(--font-helvetica, 'Helvetica Neue', sans-serif) !important;
+    font-weight: var(--weight-bold, 700) !important;
+    font-size: 2rem !important;
+}
+
+.metric-label {
+    font-family: var(--font-helvetica, 'Helvetica Neue', sans-serif) !important;
+    font-weight: var(--weight-bold, 700) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+}
+
+/* ===== SWISS PUNK TYPOGRAPHY ===== */
+h1, h2, h3, h4, h5, h6,
+.order-form-section__title,
+.filter-title {
+    font-family: var(--font-helvetica, 'Helvetica Neue', sans-serif) !important;
+    font-weight: var(--weight-bold, 700) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+/* ===== REMOVE ROUNDED CORNERS GLOBALLY ===== */
+* {
+    border-radius: 0 !important;
+}
+
+/* ===== SWISS PUNK FOOTER ===== */
+.footer-glassmorphism {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: var(--swiss-black, #000) !important;
+    color: var(--swiss-white, #fff) !important;
+    border-top: var(--swiss-border-ultra, 4px) solid var(--swiss-red, #FF0000) !important;
+    box-shadow: none !important;
+}
+
+.footer-glassmorphism .footer-text,
+.footer-glassmorphism .footer-text small {
+    color: var(--swiss-white, #fff) !important;
+}
+
+.footer-glassmorphism .footer-separator {
+    color: var(--swiss-red, #FF0000) !important;
+    opacity: 1 !important;
+}
+
+.footer-glassmorphism .text-primary {
+    color: var(--swiss-red, #FF0000) !important;
+}
+
+.footer-glassmorphism .text-success {
+    color: var(--swiss-green, #00FF00) !important;
+}
+
+.footer-glassmorphism i {
+    color: var(--swiss-red, #FF0000) !important;
+}
+
+/* ===== SCROLL TO TOP ===== */
+.footer-scroll-top {
+    background: var(--swiss-red, #FF0000) !important;
+    border: var(--swiss-border-medium, 2px) solid var(--swiss-black, #000) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    width: 48px !important;
+    height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--swiss-white, #fff) !important;
+    font-size: 1.5rem !important;
+}
+
+.footer-scroll-top:hover {
+    background: var(--swiss-red-dark, #CC0000) !important;
+    color: var(--swiss-white, #fff) !important;
+}
+
+.footer-scroll-top i {
+    color: var(--swiss-white, #fff) !important;
+    font-size: 1.5rem !important;
+}
+
+/* ===== CONNECTION BANNER ===== */
+.connection-banner {
+    background: var(--swiss-black, #000) !important;
+    border: var(--swiss-border-medium, 2px) solid var(--swiss-red, #FF0000) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.connection-banner--online {
+    background: var(--swiss-green, #00FF00) !important;
+    color: var(--swiss-black, #000) !important;
+    border-color: var(--swiss-black, #000) !important;
+}
+
+/* ===== FILTER TOGGLE BUTTON ===== */
+.filter-toggle-btn {
+    background: var(--swiss-red, #FF0000) !important;
+    border: var(--swiss-border-medium, 2px) solid var(--swiss-black, #000) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font-family: var(--font-helvetica, 'Helvetica Neue', sans-serif) !important;
+    font-weight: var(--weight-bold, 700) !important;
+    text-transform: uppercase !important;
+}
+
+.filter-toggle-btn:hover {
+    background: var(--swiss-red-dark, #CC0000) !important;
+}
+
+/* ===== SWISS PUNK ANIMATIONS ===== */
+.fadeIn {
+    animation: swiss-fade-in 0.3s ease-out !important;
+}
+
+@keyframes swiss-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== LAYOUT ADJUSTMENTS ===== */
+/* Remove espaços em branco excessivos */
+.container-fluid {
+    min-height: auto !important;
+}
+
+.order-detail-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Ajusta padding vertical para views - mais compacto */
+.container-fluid.py-4 {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+}
+
+.container-fluid.px-3,
+.container-fluid.px-md-5 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+}
+
+/* Reduz espaçamento interno dos cards */
+.order-detail-card {
+    padding: 1rem !important;
+}
+
+/* Reduz espaçamento interno dos elementos */
+.order-detail-meta {
+    margin-bottom: 0.75rem !important;
+}
+
+.order-detail-actions {
+    margin-top: 0.75rem !important;
+    gap: 0.5rem !important;
+}
+
+.order-form-section__title {
+    margin-bottom: 0.5rem !important;
+    font-size: 1rem !important;
+}
+
+.d-flex.gap-3 {
+    gap: 0.75rem !important;
+}
+
+.mb-3 {
+    margin-bottom: 0.75rem !important;
+}
+
+@media (max-width: 768px) {
+    .container-fluid.py-4 {
+        padding-top: 0.75rem !important;
+        padding-bottom: 0.75rem !important;
+    }
+    
+    .order-detail-card {
+        padding: 0.75rem !important;
+    }
+    
+    .order-detail-stack {
+        gap: 0.75rem;
+    }
+    
+    .order-form-section__title {
+        font-size: 0.9rem !important;
+    }
+}

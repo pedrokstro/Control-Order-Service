@@ -1,0 +1,383 @@
+@model OrdemServicoMVC.ViewModels.RelatorioResultadoViewModel
+@{
+    ViewData["Title"] = "Gráficos e Análises";
+}
+
+<!-- Filtros de Período -->
+<div class="container-fluid px-4 py-4" style="max-width: 1900px; margin: 0 auto;">
+    <div class="brutal-card mb-4" data-brutal-reveal>
+        <h2 class="brutal-text-black mb-3">FILTROS DE PERÍODO</h2>
+        
+        <form method="get" asp-action="Graficos" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label fw-bold small text-uppercase text-muted">DATA INÍCIO</label>
+                <input type="date" name="dataInicio" class="brutal-input w-100" 
+                       value="@Model.Filtros.DataInicio?.ToString("yyyy-MM-dd")">
+            </div>
+            
+            <div class="col-md-4">
+                <label class="form-label fw-bold small text-uppercase text-muted">DATA FIM</label>
+                <input type="date" name="dataFim" class="brutal-input w-100" 
+                       value="@Model.Filtros.DataFim?.ToString("yyyy-MM-dd")">
+            </div>
+            
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="brutal-btn brutal-btn--primary w-100">
+                    <i class="bi bi-funnel me-2"></i>APLICAR FILTROS
+                </button>
+            </div>
+        </form>
+        
+        <div class="mt-3 p-3 rounded" style="background: var(--brutalist-gray-100); border-left: 3px solid var(--signal-blue);">
+            <strong>PERÍODO SELECIONADO:</strong> 
+            @Model.Filtros.DataInicio?.ToString("dd/MM/yyyy") até @Model.Filtros.DataFim?.ToString("dd/MM/yyyy")
+            <span class="ms-3">|</span>
+            <strong class="ms-3">TOTAL DE ORDENS:</strong> @Model.Estatisticas.TotalOrdens
+        </div>
+    </div>
+
+    <!-- Grid de Gráficos -->
+    <div class="row g-4">
+        <!-- Gráfico: Lojas Mais Ativas -->
+        <div class="col-lg-6">
+            <div class="brutal-card" data-brutal-reveal>
+                <h3 class="brutal-text-black mb-3">LOJAS MAIS ATIVAS</h3>
+                <p class="mb-3 text-muted">Ranking das 10 lojas que mais abriram ordens no período</p>
+                
+                <div class="chart-container" style="position: relative; height: 400px;">
+                    <canvas id="graficoLojas"></canvas>
+                </div>
+                
+                <!-- Tabela de dados -->
+                <div class="mt-4">
+                    <table class="brutal-table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="text-secondary small text-uppercase">LOJA</th>
+                                <th class="text-center text-secondary small text-uppercase">TOTAL</th>
+                                <th class="text-center text-secondary small text-uppercase">ABERTAS</th>
+                                <th class="text-center text-secondary small text-uppercase">ANDAMENTO</th>
+                                <th class="text-center text-secondary small text-uppercase">CONCLUÍDAS</th>
+                                <th class="text-center text-secondary small text-uppercase">%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var loja in Model.Estatisticas.LojasAtividade)
+                            {
+                                <tr>
+                                    <td><strong>@loja.NomeLoja</strong></td>
+                                    <td class="text-center">@loja.TotalOrdens</td>
+                                    <td class="text-center">@loja.OrdensAbertas</td>
+                                    <td class="text-center">@loja.OrdensEmAndamento</td>
+                                    <td class="text-center">@loja.OrdensConcluidas</td>
+                                    <td class="text-center">@loja.PercentualTotal.ToString("F1")%</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gráfico: Problemas Frequentes -->
+        <div class="col-lg-6">
+            <div class="brutal-card" data-brutal-reveal>
+                <h3 class="brutal-text-black mb-3">PROBLEMAS MAIS FREQUENTES</h3>
+                <p class="mb-3 text-muted">Palavras-chave mais comuns nas descrições das ordens</p>
+                
+                <div class="chart-container" style="position: relative; height: 400px;">
+                    <canvas id="graficoProblemas"></canvas>
+                </div>
+                
+                <!-- Lista de problemas -->
+                <div class="mt-4">
+                    @if (Model.Estatisticas.ProblemasFrequentes.Any())
+                    {
+                        @foreach (var problema in Model.Estatisticas.ProblemasFrequentes)
+                        {
+                            <div class="mb-3 p-3 rounded" style="border-left: 4px solid var(--signal-red); background: var(--brutalist-gray-100);">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong class="text-uppercase" style="font-size: 1rem; color: var(--brutalist-gray-900);">@problema.Descricao</strong>
+                                        <br>
+                                        <small class="text-muted">
+                                            <i class="bi bi-graph-up me-1"></i>
+                                            @problema.Quantidade ocorrências (@problema.PercentualTotal.ToString("F1")%)
+                                        </small>
+                                    </div>
+                                    <span class="brutal-badge brutal-badge--red">@problema.Quantidade</span>
+                                </div>
+                                <div class="mt-2">
+                                    <small>
+                                        <strong>Setor mais afetado:</strong> @problema.SetorMaisAfetado
+                                        @if (problema.LojasAfetadas.Any())
+                                        {
+                                            <span class="ms-3">|</span>
+                                            <strong class="ms-3">Lojas:</strong> @string.Join(", ", problema.LojasAfetadas.Take(3))
+                                            @if (problema.LojasAfetadas.Count > 3)
+                                            {
+                                                <text> e mais @(problema.LojasAfetadas.Count - 3)</text>
+                                            }
+                                        }
+                                    </small>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Não há dados suficientes para análise de problemas frequentes.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gráfico: Atividade por Setor -->
+        <div class="col-12 mt-4">
+            <div class="brutal-card" data-brutal-reveal>
+                <h3 class="brutal-text-black mb-3">ATIVIDADE POR SETOR</h3>
+                <p class="mb-3 text-muted">Distribuição de ordens e tempo médio de conclusão por setor</p>
+                
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="chart-container" style="position: relative; height: 400px;">
+                            <canvas id="graficoSetores"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <h5 class="fw-bold text-uppercase mb-3">MÉTRICAS POR SETOR</h5>
+                        @foreach (var setor in Model.Estatisticas.SetoresAtividade)
+                        {
+                            <div class="mb-3 p-2" style="border-left: 3px solid #000;">
+                                <strong>@setor.NomeSetor</strong>
+                                <br>
+                                <small class="text-muted">
+                                    @setor.TotalOrdens ordens (@setor.PercentualTotal.ToString("F1")%)
+                                    <br>
+                                    Tempo médio: @setor.TempoMedioConclusao.ToString("F1") dias
+                                </small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cards de Resumo -->
+        <div class="col-lg-3 col-md-6">
+            <div class="brutal-card" data-brutal-reveal style="border-left: 4px solid var(--signal-blue);">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-uppercase text-muted mb-1 small">TOTAL ORDENS</h6>
+                        <h2 class="mb-0 fw-bold brutal-text-blue">@Model.Estatisticas.TotalOrdens</h2>
+                    </div>
+                    <i class="bi bi-clipboard-data" style="font-size: 2.5rem; color: var(--signal-blue); opacity: 0.2"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="brutal-card" data-brutal-reveal style="border-left: 4px solid var(--signal-red);">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-uppercase text-muted mb-1 small">ABERTAS</h6>
+                        <h2 class="mb-0 fw-bold brutal-text-red">@Model.Estatisticas.OrdensAbertas</h2>
+                    </div>
+                    <i class="bi bi-folder2-open" style="font-size: 2.5rem; color: var(--signal-red); opacity: 0.2"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="brutal-card" data-brutal-reveal style="border-left: 4px solid var(--signal-yellow);">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-uppercase text-muted mb-1 small">EM ANDAMENTO</h6>
+                        <h2 class="mb-0 fw-bold text-dark">@Model.Estatisticas.OrdensEmAndamento</h2>
+                    </div>
+                    <i class="bi bi-gear" style="font-size: 2.5rem; color: var(--signal-yellow); opacity: 0.2"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="brutal-card" data-brutal-reveal style="border-left: 4px solid var(--signal-green);">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-uppercase text-muted mb-1 small">CONCLUÍDAS</h6>
+                        <h2 class="mb-0 fw-bold text-success">@Model.Estatisticas.OrdensConcluidas</h2>
+                    </div>
+                    <i class="bi bi-check-circle" style="font-size: 2.5rem; color: var(--signal-green); opacity: 0.2"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <script>
+        // Configuração Modern Soft para Chart.js
+        Chart.defaults.font.family = "'Inter', system-ui, -apple-system, sans-serif";
+        Chart.defaults.font.weight = '500';
+        Chart.defaults.color = '#334155'; // Slate 700
+        
+        // Paleta de cores Modern Soft (Quartetto)
+        const modernColors = {
+            blue: '#0047AB',
+            blueLight: 'rgba(0, 71, 171, 0.7)',
+            red: '#EE1D23',
+            redLight: 'rgba(238, 29, 35, 0.7)',
+            yellow: '#FFDE00',
+            yellowLight: 'rgba(255, 222, 0, 0.7)',
+            green: '#00C853',
+            greenLight: 'rgba(0, 200, 83, 0.7)',
+            slate: '#1E293B',
+            slateLight: '#475569',
+            white: '#FFFFFF',
+            grid: '#E2E8F0'
+        };
+        
+        // ===== GRÁFICO: LOJAS MAIS ATIVAS =====
+        const ctxLojas = document.getElementById('graficoLojas').getContext('2d');
+        new Chart(ctxLojas, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.Estatisticas.LojasAtividade.Select(l => l.NomeLoja))),
+                datasets: [{
+                    label: 'Total de Ordens',
+                    data: @Html.Raw(Json.Serialize(Model.Estatisticas.LojasAtividade.Select(l => l.TotalOrdens))),
+                    backgroundColor: modernColors.blue,
+                    borderColor: 'transparent',
+                    borderWidth: 0,
+                    borderRadius: 6,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        display: false 
+                    },
+                    tooltip: {
+                        backgroundColor: modernColors.slate,
+                        titleColor: modernColors.white,
+                        bodyColor: modernColors.white,
+                        padding: 12,
+                        cornerRadius: 8,
+                        titleFont: { size: 14, weight: '600' },
+                        bodyFont: { size: 13 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { 
+                            color: modernColors.grid,
+                            drawBorder: false
+                        },
+                        ticks: { 
+                            font: { size: 12 },
+                            color: modernColors.slateLight
+                        },
+                        border: { display: false }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { 
+                            font: { size: 11 },
+                            color: modernColors.slateLight
+                        },
+                        border: { display: false }
+                    }
+                }
+            }
+        });
+        
+        // ===== GRÁFICO: PROBLEMAS FREQUENTES =====
+        const ctxProblemas = document.getElementById('graficoProblemas').getContext('2d');
+        const problemasData = @Html.Raw(Json.Serialize(Model.Estatisticas.ProblemasFrequentes.Select(p => p.Quantidade)));
+        const problemasLabels = @Html.Raw(Json.Serialize(Model.Estatisticas.ProblemasFrequentes.Select(p => p.Descricao)));
+        
+        // Gera cores alternadas
+        const problemasColors = problemasData.map((_, index) => {
+            const colors = [modernColors.blue, modernColors.red, modernColors.yellow, 
+                          modernColors.green, modernColors.slate];
+            return colors[index % colors.length];
+        });
+        
+        new Chart(ctxProblemas, {
+            type: 'doughnut',
+            data: {
+                labels: problemasLabels,
+                datasets: [{
+                    data: problemasData,
+                    backgroundColor: problemasColors,
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { 
+                            usePointStyle: true,
+                            font: { size: 12 },
+                            color: modernColors.slate
+                        }
+                    }
+                }
+            }
+        });
+        
+        // ===== GRÁFICO: SETORES =====
+        const ctxSetores = document.getElementById('graficoSetores').getContext('2d');
+        new Chart(ctxSetores, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.Estatisticas.SetoresAtividade.Select(s => s.NomeSetor))),
+                datasets: [{
+                    label: 'Ordens por Setor',
+                    data: @Html.Raw(Json.Serialize(Model.Estatisticas.SetoresAtividade.Select(s => s.TotalOrdens))),
+                    backgroundColor: modernColors.slate,
+                    borderRadius: 6,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: { 
+                            color: modernColors.grid,
+                            drawBorder: false
+                        },
+                        ticks: { color: modernColors.slateLight },
+                        border: { display: false }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { color: modernColors.slate },
+                        border: { display: false }
+                    }
+                }
+            }
+        });
+    </script>
+}

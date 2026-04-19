@@ -1,0 +1,522 @@
+@model OrdemServicoMVC.Models.OrdemServico
+
+@{
+    ViewData["Title"] = $"Chat - OS #{Model.Id}";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var tituloCompacto = Model?.Titulo;
+    if (!string.IsNullOrEmpty(tituloCompacto) && tituloCompacto.Length > 48)
+    {
+        tituloCompacto = tituloCompacto.Substring(0, 48) + "...";
+    }
+}
+
+<!-- Container principal com gradiente de fundo -->
+<div class="chat-container">
+    <div class="container-fluid px-4 fadeIn">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <a asp-controller="OrdemServico" asp-action="Index" class="btn btn-outline-secondary btn-action-form">
+                <i class="bi bi-arrow-left me-2"></i>Voltar
+            </a>
+        </div>
+        <div class="row justify-content-center">
+            <!-- Ajustando o container para col-lg-6 col-md-8 (mesmo tamanho do formulário) -->
+            <div class="col-lg-6 col-md-8">
+                <!-- Cabeçalho com informações da ordem de serviço -->
+                <div class="chat-header-card">
+            <!-- Header organizado: esquerda (título + descrição) e direita (status/prioridade/técnico/setor) -->
+            <div class="chat-header-grid">
+                <div class="chat-header-left">
+                    <div class="chat-header-line">
+                        <span class="chat-label"><i class="bi bi-clipboard-check"></i> Título</span>
+                        <span class="chat-value chat-title-text" title="@Model.Titulo">@tituloCompacto</span>
+                    </div>
+                    <div class="chat-header-line">
+                        <span class="chat-label"><i class="bi bi-file-text"></i> Descrição</span>
+                        <span class="chat-value chat-description-text">@Model.Descricao</span>
+                    </div>
+                </div>
+                <div class="chat-header-right">
+                    <div class="chat-header-chip">
+                        <span class="chat-label"><i class="bi bi-info-circle"></i> Status</span>
+                        @switch (Model.Status)
+                        {
+                            case OrdemServicoMVC.Models.StatusEnum.Aberta:
+                                <span class="chat-badge status-aberta"><i class="bi bi-circle"></i> ABERTA</span>
+                                break;
+                            case OrdemServicoMVC.Models.StatusEnum.EmAndamento:
+                                <span class="chat-badge status-andamento"><i class="bi bi-arrow-clockwise"></i> EM ANDAMENTO</span>
+                                break;
+                            case OrdemServicoMVC.Models.StatusEnum.Concluida:
+                                <span class="chat-badge status-concluida"><i class="bi bi-check-circle"></i> CONCLUÍDA</span>
+                                break;
+                        }
+                    </div>
+                    <div class="chat-header-chip">
+                        <span class="chat-label"><i class="bi bi-exclamation-triangle"></i> Prioridade</span>
+                        @switch (Model.Prioridade)
+                        {
+                            case OrdemServicoMVC.Models.PrioridadeEnum.Baixa:
+                                <span class="chat-badge prioridade-baixa"><i class="bi bi-arrow-down"></i> BAIXA</span>
+                                break;
+                            case OrdemServicoMVC.Models.PrioridadeEnum.Media:
+                                <span class="chat-badge prioridade-media"><i class="bi bi-dash"></i> MÉDIA</span>
+                                break;
+                            case OrdemServicoMVC.Models.PrioridadeEnum.Alta:
+                                <span class="chat-badge prioridade-alta"><i class="bi bi-arrow-up"></i> ALTA</span>
+                                break;
+                        }
+                    </div>
+                    <div class="chat-header-chip">
+                        <span class="chat-label"><i class="bi bi-person-gear"></i> Técnico</span>
+                        @if (Model.TecnicoResponsavel != null && !string.IsNullOrEmpty(Model.TecnicoResponsavel.UserName))
+                        {
+                            <span class="chat-badge tecnico"><i class="bi bi-person-check"></i> @Model.TecnicoResponsavel.UserName</span>
+                        }
+                        else
+                        {
+                            <span class="chat-badge tecnico-nao-atribuido"><i class="bi bi-person-dash"></i> Não atribuído</span>
+                        }
+                    </div>
+                    <div class="chat-header-chip">
+                        <span class="chat-label"><i class="bi bi-building"></i> Setor</span>
+                        <span class="chat-badge setor">
+                            <i class="bi bi-geo-alt"></i>
+                            @switch (Model.Setor)
+                            {
+                                case OrdemServicoMVC.Models.SetorEnum.FrenteDeCaixa:
+                                    <span>Frente de Caixa</span>
+                                    break;
+                                case OrdemServicoMVC.Models.SetorEnum.Financeiro:
+                                    <span>Financeiro</span>
+                                    break;
+                                case OrdemServicoMVC.Models.SetorEnum.Faturamento:
+                                    <span>Faturamento</span>
+                                    break;
+                                case OrdemServicoMVC.Models.SetorEnum.Administrativo:
+                                    <span>Administrativo</span>
+                                    break;
+                                case OrdemServicoMVC.Models.SetorEnum.Rh:
+                                    <span>RH</span>
+                                    break;
+                                case OrdemServicoMVC.Models.SetorEnum.Prevencao:
+                                    <span>Prevenção</span>
+                                    break;
+                                case OrdemServicoMVC.Models.SetorEnum.Gerencia:
+                                    <span>Gerência</span>
+                                    break;
+                                case OrdemServicoMVC.Models.SetorEnum.Contabilidade:
+                                    <span>Contabilidade</span>
+                                    break;
+                                case OrdemServicoMVC.Models.SetorEnum.Patrimonio:
+                                    <span>Patrimônio</span>
+                                    break;
+                                case OrdemServicoMVC.Models.SetorEnum.Compras:
+                                    <span>Compras</span>
+                                    break;
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Terceira linha: Observações e Data de Conclusão (se houver) -->
+            @if (!string.IsNullOrEmpty(Model.Observacoes) || Model.DataConclusao.HasValue)
+            {
+                <div class="row">
+                    @if (!string.IsNullOrEmpty(Model.Observacoes))
+                    {
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-start">
+                                <strong class="text-primary me-2"><i class="bi bi-sticky"></i> Observações:</strong>
+                                <span class="text-dark">@Model.Observacoes</span>
+                            </div>
+                        </div>
+                    }
+                    @if (Model.DataConclusao.HasValue)
+                    {
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center">
+                                <strong class="text-primary me-2"><i class="bi bi-check-circle"></i> Concluída em:</strong>
+                                <span class="text-dark">@Model.DataConclusao.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Área do Chat com design moderno -->
+        <div class="chat-main-card">
+            <!-- Mensagens -->
+            <div id="chat-messages" class="chat-messages-area">
+                @if (Model.Mensagens.Any())
+                {
+                    @foreach (var mensagem in Model.Mensagens.OrderBy(m => m.DataEnvio))
+                    {
+                        var isCurrentUser = mensagem.UsuarioId == ViewContext.HttpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                        <div class="mb-3 @(isCurrentUser ? "text-end" : "text-start")">
+                            <div class="d-inline-block @(isCurrentUser ? "chat-message-current" : "chat-message-other")" style="word-wrap: break-word;">
+                                <div class="chat-message-user">
+                                    @if (isCurrentUser)
+                                    {
+                                        <span>Você</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@(mensagem.Usuario?.NomeLoja ?? "Usuário")</span>
+                                    }
+                                </div>
+                                @if (!string.IsNullOrEmpty(mensagem.Conteudo))
+                                {
+                                    <div>@mensagem.Conteudo</div>
+                                }
+                                
+                                @* Exibir anexos (imagens, vídeos e pdfs) *@
+                                @if (mensagem.Anexos != null && mensagem.Anexos.Any())
+                                {
+                                    <div class="mt-2 text-start">
+                                        @foreach (var anexo in mensagem.Anexos)
+                                        {
+                                            <div class="mb-2 chat-attachment-container">
+                                                @if (anexo.TipoMime.StartsWith("image/"))
+                                                {
+                                                    <img src="@Url.Action("Download", "Anexo", new { id = anexo.Id })" 
+                                                         alt="@anexo.NomeArquivo" 
+                                                         class="chat-message-image img-fluid rounded" 
+                                                         onclick="window.open('@Url.Action("Download", "Anexo", new { id = anexo.Id })', '_blank')" 
+                                                         title="Clique para ver em tamanho original">
+                                                }
+                                                else if (anexo.TipoMime.StartsWith("video/"))
+                                                {
+                                                    <div class="chat-video-wrapper bg-dark rounded p-2 d-inline-block">
+                                                        <video class="rounded" style="max-width: 100%; max-height: 200px;" controls>
+                                                            <source src="@Url.Action("Download", "Anexo", new { id = anexo.Id })" type="@anexo.TipoMime">
+                                                            Seu navegador não suporta vídeos.
+                                                        </video>
+                                                    </div>
+                                                }
+                                                else if (anexo.TipoMime == "application/pdf")
+                                                {
+                                                    <a href="@Url.Action("Download", "Anexo", new { id = anexo.Id })" target="_blank" class="chat-pdf-link d-inline-flex align-items-center p-2 rounded bg-light border text-decoration-none">
+                                                        <i class="bi bi-file-earmark-pdf-fill text-danger fs-4 me-2"></i>
+                                                        <div class="text-start">
+                                                            <div class="fw-bold text-dark small">@anexo.NomeArquivo</div>
+                                                            <div class="text-muted" style="font-size: 0.7rem;">Documento PDF - Clique para abrir</div>
+                                                        </div>
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <a href="@Url.Action("Download", "Anexo", new { id = anexo.Id })" target="_blank" class="chat-file-link d-inline-flex align-items-center p-2 rounded bg-light border text-decoration-none">
+                                                        <i class="bi bi-file-earmark-fill text-secondary fs-4 me-2"></i>
+                                                        <div class="text-start">
+                                                            <div class="fw-bold text-dark small">@anexo.NomeArquivo</div>
+                                                            <div class="text-muted" style="font-size: 0.7rem;">Arquivo (@(Math.Round((double)anexo.TamanhoBytes / 1024, 1)) KB)</div>
+                                                        </div>
+                                                    </a>
+                                                }
+                                                <div class="small text-muted mt-1" style="font-size: 0.7rem;">
+                                                    <i class="bi bi-paperclip"></i> @anexo.NomeArquivo
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                
+                                <div class="chat-message-time">
+                                    @mensagem.DataEnvio.ToString("dd/MM/yyyy 'às' HH:mm")
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="chat-empty-state">
+                        <i class="bi bi-chat-square-text d-block"></i>
+                        <p>Nenhuma mensagem ainda. Seja o primeiro a enviar uma mensagem!</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Formulário de Envio com design moderno -->
+            <div class="chat-input-area">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="chat-alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-2"></i>
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="chat-alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        @TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <form asp-action="EnviarMensagem" method="post" enctype="multipart/form-data" id="chat-form">
+                    <input type="hidden" name="ordemServicoId" value="@Model.Id" />
+                    
+                    <!-- Preview de imagens selecionadas -->
+                    <div id="image-preview-chat" class="chat-image-preview" style="display: none;">
+                        <div class="d-flex flex-wrap gap-2" id="preview-images-chat"></div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <textarea name="conteudo" id="mensagem-input" class="form-control chat-input-field" placeholder="Digite sua mensagem..." rows="2"></textarea>
+                        <input type="file" id="anexo-chat" name="anexos" multiple accept="image/*,video/mp4,video/webm,video/quicktime,application/pdf" style="display: none;">
+                        <button type="button" class="btn chat-attach-btn" onclick="document.getElementById('anexo-chat').click()" title="Anexar arquivos (Imagens, Vídeos ou PDF)">
+                            <i class="bi bi-paperclip"></i>
+                        </button>
+                        <button type="submit" class="btn chat-send-btn">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                    <small class="chat-help-text">Pressione Enter para enviar. Use Shift+Enter para quebra de linha. Clique no clipe para anexar Imagens, Vídeos ou PDF (máx 20MB).</small>
+                </form>
+            </div>
+        </div>
+            </div> <!-- Fechamento da div col-lg-6 col-md-8 -->
+        </div> <!-- Fechamento da div row -->
+    </div> <!-- Fechamento da div container-fluid -->
+</div> <!-- Fechamento da div chat-container -->
+
+@section Scripts {
+    <!-- Biblioteca do SignalR -->
+    <script>
+        // Carrega a biblioteca SignalR dinamicamente
+        var signalrUrl = 'https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js';
+        var script = document.createElement('script');
+        script.src = signalrUrl;
+        
+        // Aguarda o carregamento da biblioteca antes de inicializar o SignalR
+        script.onload = function() {
+            initializeChatSignalR();
+        };
+        
+        document.head.appendChild(script);
+        
+        function initializeChatSignalR() {
+        // Auto-scroll para a última mensagem
+        $(document).ready(function() {
+            var chatMessages = document.getElementById('chat-messages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+
+        // Envio rápido com Enter (Shift+Enter para nova linha)
+        $('#mensagem-input').keydown(function(e) {
+            if (e.keyCode === 13 && !e.shiftKey) {
+                e.preventDefault();
+                $('#chat-form').submit();
+            }
+        });
+
+        // Preview de imagens selecionadas no chat
+        $('#anexo-chat').change(function() {
+            const allFiles = Array.from(this.files);
+            const inputElement = this;
+            
+            showLoading('Processando Anexos...', `Preparando ${allFiles.length} arquivo(s) para o chat.`);
+
+            if (allFiles.length === 0) {
+                $('#preview-images-chat').empty();
+                $('#image-preview-chat').hide();
+                hideLoading();
+                return;
+            }
+
+            setTimeout(async () => {
+                // Função para validar arquivo (tipo e tamanho)
+                function validarArquivo(file) {
+                    const tiposPermitidos = [
+                        'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp',
+                        'video/mp4', 'video/webm', 'video/quicktime',
+                        'application/pdf'
+                    ];
+                    const tamanhoMaximo = 20 * 1024 * 1024; // 20MB
+
+                    if (!tiposPermitidos.includes(file.type)) {
+                        if (window.BrutalistAnimations) {
+                            window.BrutalistAnimations.showToast(`Arquivo "${file.name}" não suportado.`, 'danger');
+                        } else {
+                            alert(`Arquivo "${file.name}" não suportado.`);
+                        }
+                        return false;
+                    }
+
+                    if (file.size > tamanhoMaximo) {
+                        if (window.BrutalistAnimations) {
+                            window.BrutalistAnimations.showToast(`Arquivo "${file.name}" excede o limite de 20MB.`, 'danger');
+                        } else {
+                            alert(`Arquivo "${file.name}" muito grande (máx 20MB).`);
+                        }
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                // Bloqueio de duplicatas
+                const seenFiles = new Set();
+                const validFiles = [];
+                const totalFiles = allFiles.length;
+
+                const previewContainer = $('#preview-images-chat');
+                const previewDiv = $('#image-preview-chat');
+                const fragment = document.createDocumentFragment();
+                previewContainer.empty();
+
+                for (let i = 0; i < totalFiles; i++) {
+                    const file = allFiles[i];
+                    const percentage = ((i + 1) / totalFiles) * 100;
+                    updateLoadingProgress(percentage);
+
+                    const fileKey = `${file.name}-${file.size}`;
+                    if (seenFiles.has(fileKey)) {
+                        if (window.BrutalistAnimations) {
+                            window.BrutalistAnimations.showToast(`Arquivo "${file.name}" já selecionado.`, 'warning');
+                        }
+                    } else if (validarArquivo(file)) {
+                        seenFiles.add(fileKey);
+                        validFiles.push(file);
+
+                        let previewContent = '';
+                        if (file.type.startsWith('image/')) {
+                            const objectUrl = URL.createObjectURL(file);
+                            previewContent = `<img src="${objectUrl}" class="chat-preview-image img-thumbnail" style="width: 100%; height: 100%; object-fit: cover;" onload="URL.revokeObjectURL(this.src)">`;
+                        } else if (file.type.startsWith('video/')) {
+                            previewContent = `
+                                <div class="chat-preview-image img-thumbnail d-flex flex-column align-items-center justify-content-center bg-dark text-white text-center" style="width: 100%; height: 100%;">
+                                    <i class="bi bi-play-btn-fill" style="font-size: 1.2rem;"></i>
+                                    <span style="font-size: 0.5rem;">VÍDEO</span>
+                                </div>`;
+                        } else if (file.type === 'application/pdf') {
+                            previewContent = `
+                                <div class="chat-preview-image img-thumbnail d-flex flex-column align-items-center justify-content-center bg-light text-danger text-center" style="width: 100%; height: 100%;">
+                                    <i class="bi bi-file-earmark-pdf-fill" style="font-size: 1.2rem;"></i>
+                                    <span style="font-size: 0.5rem;">PDF</span>
+                                </div>`;
+                        } else {
+                            previewContent = `
+                                <div class="chat-preview-image img-thumbnail d-flex flex-column align-items-center justify-content-center bg-light text-secondary text-center" style="width: 100%; height: 100%;">
+                                    <i class="bi bi-file-earmark-fill" style="font-size: 1.2rem;"></i>
+                                    <span style="font-size: 0.5rem;">ARQUIVO</span>
+                                </div>`;
+                        }
+
+                        const imagePreview = $(`
+                            <div class="position-relative" style="width: 80px; height: 80px;">
+                                ${previewContent}
+                                <button type="button" class="chat-remove-preview position-absolute top-0 end-0" 
+                                        onclick="removeImagePreview(${validFiles.length - 1}, 'chat'); event.stopPropagation();">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                        `);
+                        fragment.appendChild(imagePreview[0]);
+                    }
+
+                    if (totalFiles > 10 && i % 5 === 0) {
+                        await new Promise(resolve => setTimeout(resolve, 0));
+                    }
+                }
+                
+                previewContainer.append(fragment);
+                
+                // Atualiza o input com apenas arquivos válidos e não duplicados
+                const dataTransfer = new DataTransfer();
+                validFiles.forEach(file => dataTransfer.items.add(file));
+                inputElement.files = dataTransfer.files;
+
+                if (validFiles.length > 0) {
+                    previewDiv.show();
+                } else {
+                    previewDiv.hide();
+                }
+                
+                setTimeout(hideLoading, 500);
+            }, 100);
+        });
+
+        // Validação do formulário de chat
+        $('#chat-form').submit(function(e) {
+            const conteudo = $('#mensagem-input').val().trim();
+            const anexos = $('#anexo-chat')[0].files;
+            
+            if (!conteudo && anexos.length === 0) {
+                e.preventDefault();
+                alert('Digite uma mensagem ou anexe um arquivo (Imagem, Vídeo ou PDF).');
+                return false;
+            }
+        });
+
+        // Configuração do SignalR para comunicação em tempo real
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/mensagemHub")
+            .build();
+
+        // Inicia a conexão com o SignalR
+        connection.start().then(function () {
+            console.log('Conectado ao SignalR');
+        }).catch(function (err) {
+            console.error('Erro ao conectar ao SignalR:', err.toString());
+        });
+
+        // Escuta por novas mensagens em tempo real
+        connection.on("ReceiveMessage", function (userName, message, timestamp, ordemServicoId) {
+            // Verifica se a mensagem é para esta ordem de serviço
+            if (ordemServicoId == @Model.Id) {
+                // Adiciona a nova mensagem ao chat
+                const chatMessages = document.getElementById('chat-messages');
+                const messageHtml = `
+                    <div class="d-flex mb-3">
+                        <div class="flex-grow-1">
+                            <div class="chat-message-other">
+                                <div class="chat-message-user">${userName}</div>
+                                <p class="mb-0">${message}</p>
+                                <div class="chat-message-time">${timestamp}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                chatMessages.insertAdjacentHTML('beforeend', messageHtml);
+                
+                // Rola para a última mensagem
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
+
+        // Escuta por notificações de mensagens não lidas
+        connection.on("UnreadMessagesCount", function (ordemServicoId, count) {
+            // Atualiza contador de mensagens não lidas se necessário
+            console.log(`Ordem ${ordemServicoId}: ${count} mensagens não lidas`);
+        });
+        
+        // Função para remover preview de imagem
+        window.removeImagePreview = function(index, context) {
+            const input = context === 'chat' ? $('#anexo-chat')[0] : $('#anexos')[0];
+            const dt = new DataTransfer();
+            
+            for (let i = 0; i < input.files.length; i++) {
+                if (i !== index) {
+                    dt.items.add(input.files[i]);
+                }
+            }
+            
+            input.files = dt.files;
+            
+            if (context === 'chat') {
+                $('#anexo-chat').trigger('change');
+            } else {
+                $('#anexos').trigger('change');
+            }
+        };
+        
+        } // Fim da função initializeChatSignalR
+    </script>
+}

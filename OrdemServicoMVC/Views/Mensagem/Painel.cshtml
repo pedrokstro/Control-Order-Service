@@ -1,0 +1,84 @@
+@model OrdemServicoMVC.ViewModels.PainelMensagensViewModel
+@{
+    ViewData["Title"] = "Painel de Mensagens";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid px-4 py-4 fadeIn" style="max-width: 1400px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Painel de Mensagens</h2>
+            <p class="text-muted mb-0">Converse com os setores e técnicos das ordens que você acompanha.</p>
+        </div>
+        <a asp-controller="OrdemServico" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Voltar às Ordens
+        </a>
+    </div>
+
+    <div class="row g-4">
+        @if (Model?.Conversas?.Any() == true)
+        {
+            @foreach (var conversa in Model.Conversas)
+            {
+                var prioridadeBadge = conversa.Prioridade switch
+                {
+                    "Alta" => "painel-badge-alta",
+                    "Media" => "painel-badge-media",
+                    "Baixa" => "painel-badge-baixa",
+                    _ => "badge-secondary"
+                };
+
+                <div class="col-12">
+                    <div class="painel-chat-card">
+                        <div class="painel-chat-header">
+                            <div>
+                                <span class="painel-chat-title">@conversa.Titulo</span>
+                                <div class="painel-chat-meta">
+                                    <span><i class="bi bi-shop me-1"></i>@conversa.Loja</span>
+                                    <span><i class="bi bi-person-gear me-1"></i>@conversa.Tecnico</span>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="painel-chat-badge @prioridadeBadge">@conversa.Prioridade</span>
+                                <div class="small text-muted">@conversa.Status</div>
+                            </div>
+                        </div>
+
+                        <div class="painel-chat-body">
+                            <div>
+                                <div class="painel-chat-preview">@conversa.UltimaMensagemPreview</div>
+                                <small class="text-muted">Última mensagem por <strong>@conversa.UltimoAutor</strong> em @(conversa.UltimaMensagem?.ToString("dd/MM/yyyy HH:mm") ?? "-" )</small>
+                            </div>
+                            <div class="text-end">
+                                @if (conversa.NaoLidas > 0)
+                                {
+                                    <span class="painel-chat-unread">@conversa.NaoLidas</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Sem novas mensagens</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="painel-chat-footer">
+                            <a asp-action="Chat" asp-route-id="@conversa.OrdemId" class="btn btn-primary">
+                                <i class="bi bi-chat-dots me-2"></i>Abrir Chat
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-chat-square-text display-4 d-block mb-3"></i>
+                    <h5>Nenhuma conversa disponível</h5>
+                    <p>Você ainda não participa de nenhuma ordem de serviço com mensagens.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,81 @@
+{
+  "id": "/",
+  "name": "COS - Controle de Ordens de Serviço",
+  "short_name": "COS",
+  "description": "Gerencie ordens, mensagens e relatórios do Quartetto em modo aplicativo, com suporte offline e notificações.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "fullscreen"],
+  "orientation": "portrait-primary",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/images/pwa-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/pwa-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nova Ordem",
+      "short_name": "Nova OS",
+      "description": "Abrir o formulário para registrar uma nova ordem.",
+      "url": "/OrdemServico/Create",
+      "icons": [
+        {
+          "src": "/images/pwa-icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Ver Ordens",
+      "short_name": "Ordens",
+      "description": "Listar e acompanhar ordens de serviço.",
+      "url": "/OrdemServico/Index"
+    },
+    {
+      "name": "Painel de Mensagens",
+      "short_name": "Mensagens",
+      "description": "Abrir o chat e acompanhar atendimentos.",
+      "url": "/Mensagem/Painel"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/images/pwa-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "share_target": {
+    "action": "/OrdemServico/Create",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "titulo",
+      "text": "descricao"
+    }
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+cos",
+      "url": "/?url=%s"
+    }
+  ],
+  "prefer_related_applications": false
+}

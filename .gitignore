@@ -1,0 +1,27 @@
+# .NET Core
+bin/
+obj/
+*.user
+*.suo
+*.sln.docstates
+.vs/
+.vscode/
+*.userprefs
+*.[Dd]b
+!ordemservico.db
+
+# Configurações com dados sensíveis
+appsettings.json
+appsettings.Development.json
+
+# Diretórios de Upload/Logs/DB Files Locais (a menos que seja sqllite default)
+OrdemServicoMVC/wwwroot/uploads/
+OrdemServicoMVC/logs/
+
+# Node
+node_modules/
+npm-debug.log
+
+# OS
+.DS_Store
+Thumbs.db

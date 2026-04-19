@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Lazy Loading - COS</title>
+    <link href="/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.success { background-color: #d4edda; color: #155724; }
+        .status.error { background-color: #f8d7da; color: #721c24; }
+        .status.loading { background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>🧪 Teste de Sistema de Lazy Loading</h1>
+        <p class="text-muted">Esta página testa todos os componentes do sistema de lazy loading implementado.</p>
+
+        <!-- Teste do LazyLoader -->
+        <div class="test-section">
+            <h3>1. LazyLoader Principal</h3>
+            <div id="lazy-loader-status" class="status loading">Verificando...</div>
+            <div id="lazy-loader-details" class="mt-2"></div>
+        </div>
+
+        <!-- Teste do Bootstrap Loader -->
+        <div class="test-section">
+            <h3>2. Bootstrap Loader</h3>
+            <div id="bootstrap-status" class="status loading">Verificando...</div>
+            <div class="mt-2">
+                <!-- Componentes Bootstrap para testar -->
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#testModal">
+                    Testar Modal
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Tooltip de teste">
+                    Testar Tooltip
+                </button>
+            </div>
+        </div>
+
+        <!-- Teste do Validation Loader -->
+        <div class="test-section">
+            <h3>3. Validation Loader</h3>
+            <div id="validation-status" class="status loading">Verificando...</div>
+            <form id="test-form" class="mt-2" data-val="true">
+                <div class="mb-3">
+                    <label for="test-email" class="form-label">Email (obrigatório)</label>
+                    <input type="email" class="form-control" id="test-email" name="email" required data-val="true" data-val-required="Email é obrigatório">
+                </div>
+                <button type="submit" class="btn btn-success">Testar Validação</button>
+            </form>
+        </div>
+
+        <!-- Teste do Image Lazy Loader -->
+        <div class="test-section">
+            <h3>4. Image Lazy Loader</h3>
+            <div id="image-status" class="status loading">Verificando...</div>
+            <div class="mt-2">
+                <img data-src="https://via.placeholder.com/300x200/007bff/ffffff?text=Lazy+Image" 
+                     class="lazy-load img-fluid" 
+                     alt="Imagem de teste lazy loading">
+            </div>
+        </div>
+
+        <!-- Teste do Reports Loader -->
+        <div class="test-section">
+            <h3>5. Reports Loader</h3>
+            <div id="reports-status" class="status loading">Verificando...</div>
+            <div class="mt-2">
+                <canvas id="test-chart" width="400" height="200" data-chart-type="bar"></canvas>
+            </div>
+        </div>
+
+        <!-- Console de Logs -->
+        <div class="test-section">
+            <h3>📋 Console de Logs</h3>
+            <div id="console-logs" style="background: #f8f9fa; padding: 15px; border-radius: 4px; font-family: monospace; max-height: 300px; overflow-y: auto;">
+                <!-- Logs serão inseridos aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de teste -->
+    <div class="modal fade" id="testModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modal de Teste</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Este modal testa se o Bootstrap foi carregado corretamente via lazy loading!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts essenciais -->
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
+    
+    <!-- Sistema de Lazy Loading -->
+    <script src="/js/lazy-loader.js"></script>
+    
+    <!-- Carregadores de componentes específicos -->
+    <script src="/js/components/validation-loader.js"></script>
+    <script src="/js/components/bootstrap-loader.js"></script>
+    <script src="/js/components/reports-loader.js"></script>
+    <script src="/js/components/image-lazy-loader.js"></script>
+
+    <script>
+        // Intercepta logs do console para exibir na página
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        const logsContainer = document.getElementById('console-logs');
+
+        function addLogToPage(message, type = 'log') {
+            const logElement = document.createElement('div');
+            logElement.style.color = type === 'error' ? '#dc3545' : type === 'warn' ? '#ffc107' : '#28a745';
+            logElement.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logsContainer.appendChild(logElement);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLogToPage(args.join(' '), 'log');
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLogToPage(args.join(' '), 'error');
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addLogToPage(args.join(' '), 'warn');
+        };
+
+        // Testes dos componentes
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                testLazyLoader();
+                testBootstrapLoader();
+                testValidationLoader();
+                testImageLoader();
+                testReportsLoader();
+            }, 500);
+        });
+
+        function updateStatus(elementId, success, message) {
+            const element = document.getElementById(elementId);
+            element.className = `status ${success ? 'success' : 'error'}`;
+            element.textContent = success ? '✅ ' + message : '❌ ' + message;
+        }
+
+        function testLazyLoader() {
+            if (typeof lazyLoader !== 'undefined') {
+                updateStatus('lazy-loader-status', true, 'LazyLoader carregado com sucesso');
+                document.getElementById('lazy-loader-details').innerHTML = `
+                    <small>Métodos disponíveis: ${Object.getOwnPropertyNames(lazyLoader).filter(prop => typeof lazyLoader[prop] === 'function').join(', ')}</small>
+                `;
+            } else {
+                updateStatus('lazy-loader-status', false, 'LazyLoader não encontrado');
+            }
+        }
+
+        function testBootstrapLoader() {
+            if (typeof bootstrapLoader !== 'undefined') {
+                updateStatus('bootstrap-status', true, 'BootstrapLoader carregado com sucesso');
+                
+                // Testa carregamento do Bootstrap
+                lazyLoader.loadScript('/lib/bootstrap/dist/js/bootstrap.bundle.min.js', 'bootstrap-bundle')
+                    .then(() => {
+                        console.log('Bootstrap carregado para teste');
+                        // Inicializa tooltips
+                        setTimeout(() => {
+                            if (typeof bootstrap !== 'undefined') {
+                                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                                });
+                            }
+                        }, 100);
+                    });
+            } else {
+                updateStatus('bootstrap-status', false, 'BootstrapLoader não encontrado');
+            }
+        }
+
+        function testValidationLoader() {
+            if (typeof validationLoader !== 'undefined') {
+                updateStatus('validation-status', true, 'ValidationLoader carregado com sucesso');
+                
+                // Testa inicialização de validação
+                validationLoader.autoInitializeValidation();
+            } else {
+                updateStatus('validation-status', false, 'ValidationLoader não encontrado');
+            }
+        }
+
+        function testImageLoader() {
+            if (typeof imageLazyLoader !== 'undefined') {
+                updateStatus('image-status', true, 'ImageLazyLoader carregado com sucesso');
+            } else {
+                updateStatus('image-status', false, 'ImageLazyLoader não encontrado');
+            }
+        }
+
+        function testReportsLoader() {
+            if (typeof reportsLoader !== 'undefined') {
+                updateStatus('reports-status', true, 'ReportsLoader carregado com sucesso');
+            } else {
+                updateStatus('reports-status', false, 'ReportsLoader não encontrado');
+            }
+        }
+    </script>
+</body>
+</html>

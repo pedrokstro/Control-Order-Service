@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Offline - COS</title>
+  <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="/css/site.css" />
+  <link rel="stylesheet" href="/stylecss/custom.css" />
+  <style>
+    body {
+      background: linear-gradient(135deg, #4f46e5 0%, #312e81 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      text-align: center;
+      padding: 1.5rem;
+    }
+    .offline-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      backdrop-filter: blur(18px);
+      padding: 2rem;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 25px 80px rgba(15, 23, 42, 0.35);
+    }
+    .offline-card img {
+      width: 96px;
+      height: 96px;
+      object-fit: contain;
+      margin-bottom: 1rem;
+    }
+    .offline-card h1 {
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    .offline-card p {
+      opacity: 0.85;
+      margin-bottom: 1.5rem;
+    }
+    .offline-card button {
+      border-radius: 999px;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-card">
+    <img src="/images/quartetto-logo.png" alt="COS" />
+    <h1>Você está offline</h1>
+    <p>Não conseguimos conectar ao servidor agora. Assim que o acesso à internet voltar, atualize esta página.</p>
+    <button class="btn btn-light" onclick="window.location.reload()">
+      <span>Recarregar</span>
+    </button>
+  </div>
+</body>
+</html>

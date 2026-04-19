@@ -1,0 +1,573 @@
+/* ============================================
+   QUARTETTO MODERN DESIGN SYSTEM
+   Clean, Professional, Sutil & Modern
+   ============================================ */
+
+:root {
+    /* ===== CORE COLORS - MODERN SOFT ===== */
+    --brutalist-black: #1E293B;
+    /* Slate 800 - Suavizado */
+    --brutalist-white: #FFFFFF;
+    --brutalist-gray-100: #F8FAFC;
+    /* Slate 50 - Background suave */
+    --brutalist-gray-200: #E2E8F0;
+    /* Slate 200 - Bordas sutis */
+    --brutalist-gray-300: #CBD5E1;
+    --brutalist-gray-700: #475569;
+    --brutalist-gray-900: #0F172A;
+
+    /* Signal Colors - Quartetto Fantastico Palette */
+    --signal-blue: #0047AB;
+    /* Primary Blue */
+    --signal-blue-hover: #003380;
+    --signal-red: #EE1D23;
+    /* Accent Red */
+    --signal-yellow: #FFDE00;
+    /* Number Yellow */
+    --signal-orange: #F05A28;
+    /* The Thing Orange */
+    --signal-green: #00C853;
+    --signal-white: #FFFFFF;
+
+    /* ===== GEOMETRY - MODERN ROUNDED ===== */
+    --brutalist-radius-none: 12px;
+    /* Modern rounded corners */
+    --brutalist-radius-minimal: 8px;
+    /* Inner elements */
+    --brutalist-border-thin: 1px;
+    --brutalist-border-medium: 1px;
+    /* Sutil border */
+    --brutalist-border-thick: 0px;
+    /* Removed thick borders */
+    --brutalist-border-ultra: 0px;
+
+    /* ===== TYPOGRAPHY - CLEAN SANS ===== */
+    --font-mono: 'Inter', system-ui, -apple-system, sans-serif;
+    /* Modern Sans Primary */
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+    /* Type Scale */
+    --text-xs: 0.75rem;
+    /* 12px */
+    --text-sm: 0.875rem;
+    /* 14px */
+    --text-base: 1rem;
+    /* 16px */
+    --text-lg: 1.125rem;
+    /* 18px */
+    --text-xl: 1.25rem;
+    /* 20px */
+    --text-2xl: 1.5rem;
+    /* 24px */
+    --text-3xl: 1.875rem;
+    /* 30px */
+    --text-4xl: 2.25rem;
+    /* 36px */
+    --text-5xl: 3rem;
+    /* 48px */
+
+    /* Font Weights */
+    --weight-normal: 400;
+    --weight-medium: 500;
+    --weight-bold: 700;
+    --weight-black: 900;
+
+    /* Line Heights */
+    --leading-tight: 1.2;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.75;
+
+    /* ===== SPACING - 8PT GRID ===== */
+    --space-1: 0.25rem;
+    /* 4px */
+    --space-2: 0.5rem;
+    /* 8px */
+    --space-3: 0.75rem;
+    /* 12px */
+    --space-4: 1rem;
+    /* 16px */
+    --space-5: 1.25rem;
+    /* 20px */
+    --space-6: 1.5rem;
+    /* 24px */
+    --space-8: 2rem;
+    /* 32px */
+    --space-10: 2.5rem;
+    /* 40px */
+    --space-12: 3rem;
+    /* 48px */
+    --space-16: 4rem;
+    /* 64px */
+
+    /* ===== SHADOWS - SOLID, NO BLUR ===== */
+    --shadow-brutal-sm: 2px 2px 0 var(--brutalist-black);
+    --shadow-brutal-md: 4px 4px 0 var(--brutalist-black);
+    --shadow-brutal-lg: 6px 6px 0 var(--brutalist-black);
+    --shadow-brutal-xl: 8px 8px 0 var(--brutalist-black);
+
+    /* Colored Shadows */
+    --shadow-blue: 4px 4px 0 var(--signal-blue);
+    --shadow-red: 4px 4px 0 var(--signal-red);
+    --shadow-yellow: 4px 4px 0 var(--signal-yellow);
+    --shadow-green: 4px 4px 0 var(--signal-green);
+
+    /* ===== TRANSITIONS - SNAPPY ===== */
+    --transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Spring Physics */
+    --spring-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* ===== Z-INDEX LAYERS ===== */
+    --z-base: 1;
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-fixed: 300;
+    --z-modal-backdrop: 400;
+    --z-modal: 500;
+    --z-popover: 600;
+    --z-tooltip: 700;
+}
+
+/* ===== GLOBAL RESETS - BRUTALIST STYLE ===== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    color: var(--brutalist-gray-700);
+    background-color: var(--brutalist-gray-100);
+    /* Fundo suave */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== TYPOGRAPHY SYSTEM ===== */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    line-height: var(--leading-tight);
+    letter-spacing: -0.02em;
+    text-transform: none;
+    color: var(--brutalist-gray-900);
+}
+
+h1 {
+    font-size: var(--text-5xl);
+}
+
+h2 {
+    font-size: var(--text-4xl);
+}
+
+h3 {
+    font-size: var(--text-3xl);
+}
+
+h4 {
+    font-size: var(--text-2xl);
+}
+
+h5 {
+    font-size: var(--text-xl);
+}
+
+h6 {
+    font-size: var(--text-lg);
+}
+
+/* ===== BRUTALIST COMPONENTS ===== */
+
+/* Cards - Modern, Soft Shadow, Clean */
+.brutal-card {
+    background: var(--brutalist-white);
+    border: 1px solid var(--brutalist-gray-200);
+    border-radius: var(--brutalist-radius-none);
+    box-shadow: var(--shadow-brutal-sm);
+    padding: var(--space-6);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.brutal-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-brutal-md);
+    border-color: var(--brutalist-gray-300);
+}
+
+.brutal-card--blue {
+    border-color: var(--signal-blue);
+    box-shadow: var(--shadow-blue);
+}
+
+.brutal-card--red {
+    border-color: var(--signal-red);
+    box-shadow: var(--shadow-red);
+}
+
+.brutal-card--yellow {
+    border-color: var(--signal-yellow);
+    box-shadow: var(--shadow-yellow);
+}
+
+.brutal-card--highlight {
+    background: var(--brutalist-black);
+    color: var(--brutalist-white);
+}
+
+/* Buttons - Industrial Style */
+.brutal-btn {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: var(--space-3) var(--space-6);
+    border: var(--brutalist-border-medium) solid var(--brutalist-black);
+    border-radius: var(--brutalist-radius-none);
+    background: var(--brutalist-white);
+    color: var(--brutalist-black);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-brutal-sm);
+    position: relative;
+}
+
+.brutal-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-brutal-md);
+}
+
+.brutal-btn:active {
+    transform: translate(0, 0);
+    box-shadow: none;
+}
+
+.brutal-btn--primary {
+    background: var(--signal-blue);
+    color: var(--brutalist-white);
+    border: 1px solid transparent;
+}
+
+.brutal-btn--primary:hover {
+    background: var(--signal-blue-hover);
+    box-shadow: var(--shadow-blue);
+}
+
+.brutal-btn--secondary {
+    background: var(--signal-yellow);
+    color: var(--brutalist-black);
+    border-color: var(--brutalist-black);
+}
+
+.brutal-btn--danger {
+    background: var(--signal-red);
+    color: var(--brutalist-white);
+    border-color: var(--brutalist-black);
+}
+
+.brutal-btn--success {
+    background: var(--signal-green);
+    color: var(--brutalist-black);
+    border-color: var(--brutalist-black);
+}
+
+.brutal-btn--ghost {
+    background: transparent;
+    border-color: var(--brutalist-black);
+    color: var(--brutalist-black);
+}
+
+/* Inputs - Clean and Minimal */
+.brutal-input {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--brutalist-gray-300);
+    border-radius: var(--brutalist-radius-minimal);
+    background: var(--brutalist-white);
+    color: var(--brutalist-black);
+    transition: all var(--transition-fast);
+}
+
+.brutal-input:focus {
+    outline: none;
+    border-color: var(--signal-blue);
+    box-shadow: 0 0 0 3px rgba(0, 71, 171, 0.15);
+    /* Ring suave */
+}
+
+.brutal-input::placeholder {
+    color: var(--brutalist-gray-300);
+}
+
+/* Tables - Clean Lines */
+.brutal-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--brutalist-gray-200);
+    border-radius: var(--brutalist-radius-none);
+    overflow: hidden;
+}
+
+.brutal-table thead {
+    background: var(--brutalist-black);
+    color: var(--brutalist-white);
+}
+
+.brutal-table th {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: var(--space-4);
+    text-align: left;
+    border-bottom: var(--brutalist-border-medium) solid var(--brutalist-black);
+}
+
+.brutal-table td {
+    padding: var(--space-4);
+    border-bottom: var(--brutalist-border-thin) solid var(--brutalist-gray-200);
+}
+
+.brutal-table tbody tr:hover {
+    background: var(--brutalist-gray-100);
+}
+
+.brutal-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Badges - Sharp Labels */
+.brutal-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-bold);
+    text-transform: uppercase;
+    padding: var(--space-1) var(--space-3);
+    border: var(--brutalist-border-thin) solid var(--brutalist-black);
+    border-radius: var(--brutalist-radius-none);
+    background: var(--brutalist-white);
+    color: var(--brutalist-black);
+}
+
+.brutal-badge--blue {
+    background: var(--signal-blue);
+    color: var(--brutalist-white);
+}
+
+.brutal-badge--orange {
+    background: var(--signal-orange);
+    color: var(--brutalist-black);
+}
+
+.brutal-badge--red {
+    background: var(--signal-red);
+    color: var(--brutalist-white);
+}
+
+.brutal-badge--green {
+    background: var(--signal-green);
+    color: var(--brutalist-black);
+}
+
+.brutal-badge--yellow {
+    background: var(--signal-yellow);
+    color: var(--brutalist-black);
+}
+
+/* Grid Overlay - Industrial Aesthetic */
+.brutal-grid-overlay {
+    position: relative;
+}
+
+.brutal-grid-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        linear-gradient(var(--brutalist-gray-200) 1px, transparent 1px),
+        linear-gradient(90deg, var(--brutalist-gray-200) 1px, transparent 1px);
+    background-size: 20px 20px;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ===== ANIMATIONS - SPRING PHYSICS ===== */
+@keyframes brutal-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes brutal-slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes brutal-scale-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes brutal-pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Animation Classes */
+.brutal-animate-slide-up {
+    animation: brutal-slide-up 0.4s var(--spring-bounce);
+}
+
+.brutal-animate-slide-in {
+    animation: brutal-slide-in 0.3s ease-out;
+}
+
+.brutal-animate-scale {
+    animation: brutal-scale-in 0.3s ease-out;
+}
+
+/* Stagger Delays */
+.brutal-stagger-1 {
+    animation-delay: 0.1s;
+}
+
+.brutal-stagger-2 {
+    animation-delay: 0.2s;
+}
+
+.brutal-stagger-3 {
+    animation-delay: 0.3s;
+}
+
+.brutal-stagger-4 {
+    animation-delay: 0.4s;
+}
+
+.brutal-stagger-5 {
+    animation-delay: 0.5s;
+}
+
+/* ===== UTILITY CLASSES ===== */
+.brutal-border-black {
+    border: var(--brutalist-border-medium) solid var(--brutalist-black);
+}
+
+.brutal-border-blue {
+    border: var(--brutalist-border-medium) solid var(--signal-blue);
+}
+
+.brutal-border-red {
+    border: var(--brutalist-border-medium) solid var(--signal-red);
+}
+
+.brutal-bg-black {
+    background: var(--brutalist-black);
+}
+
+.brutal-bg-white {
+    background: var(--brutalist-white);
+}
+
+.brutal-bg-blue {
+    background: var(--signal-blue);
+}
+
+.brutal-bg-yellow {
+    background: var(--signal-yellow);
+}
+
+.brutal-text-black {
+    color: var(--brutalist-black);
+}
+
+.brutal-text-white {
+    color: var(--brutalist-white);
+}
+
+.brutal-text-blue {
+    color: var(--signal-blue);
+}
+
+.brutal-text-red {
+    color: var(--signal-red);
+}
+
+/* ===== RESPONSIVE - MOBILE FIRST ===== */
+@media (max-width: 768px) {
+    :root {
+        --text-5xl: 2rem;
+        --text-4xl: 1.75rem;
+        --text-3xl: 1.5rem;
+    }
+
+    .brutal-card {
+        padding: var(--space-4);
+    }
+
+    .brutal-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus States - High Contrast */
+*:focus-visible {
+    outline: var(--brutalist-border-thick) solid var(--signal-blue);
+    outline-offset: 2px;
+}

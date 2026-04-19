@@ -1,0 +1,37 @@
+@{
+    ViewData["Title"] = "Acesso Negado";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Acesso Negado
+                    </h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-lock fa-4x text-warning"></i>
+                    </div>
+                    <h5 class="card-title">Você não tem permissão para acessar esta página</h5>
+                    <p class="card-text text-muted">
+                        Sua sessão pode ter expirado ou você não possui as permissões necessárias para visualizar este conteúdo.
+                    </p>
+                    <div class="mt-4">
+                        <a href="@Url.Action("Login", "Account")" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Fazer Login Novamente
+                        </a>
+                        <a href="@Url.Action("Index", "OrdemServico")" class="btn btn-secondary">
+                            <i class="fas fa-home"></i>
+                            Página Inicial
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

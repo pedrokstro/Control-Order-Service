@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Chat</title>
+    <script src="https://unpkg.com/@microsoft/signalr@latest/dist/browser/signalr.js"></script>
+</head>
+<body>
+    <h1>Teste de Envio de Mensagem</h1>
+    <form id="testForm">
+        <input type="hidden" name="__RequestVerificationToken" value="test-token" />
+        <input type="text" id="messageInput" placeholder="Digite uma mensagem" />
+        <button type="button" id="sendButton">Enviar</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <script>
+        // Teste básico de envio de mensagem
+        document.getElementById('sendButton').addEventListener('click', async function() {
+            console.log('Botão clicado - iniciando teste');
+            
+            const messageInput = document.getElementById('messageInput');
+            const content = messageInput.value.trim();
+            
+            if (!content) {
+                alert('Digite uma mensagem');
+                return;
+            }
+            
+            try {
+                // Criar FormData
+                const formData = new FormData();
+                formData.append('ordemServicoId', '1'); // ID de teste
+                formData.append('conteudo', content);
+                formData.append('__RequestVerificationToken', 'test-token');
+                
+                console.log('Enviando requisição para:', '/Mensagem/EnviarMensagemAjax');
+                
+                // Enviar requisição
+                const response = await fetch('/Mensagem/EnviarMensagemAjax', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                console.log('Status da resposta:', response.status);
+                console.log('Headers da resposta:', response.headers);
+                
+                const result = await response.text();
+                console.log('Resposta completa:', result);
+                
+                document.getElementById('result').innerHTML = `
+                    <h3>Resultado:</h3>
+                    <p>Status: ${response.status}</p>
+                    <p>Resposta: ${result}</p>
+                `;
+                
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                document.getElementById('result').innerHTML = `
+                    <h3>Erro:</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

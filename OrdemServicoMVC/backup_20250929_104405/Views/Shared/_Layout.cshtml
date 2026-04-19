@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Sistema de Ordem de Serviço</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/stylecss/custom.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/OrdemServicoMVC.styles.css" asp-append-version="true" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Favicon - Referência explícita para garantir atualização -->
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" asp-append-version="true" />
+    
+    <!-- Estilos para o toggle do filtro -->
+    <style>
+        /* Botão toggle do filtro - Cor sólida igual ao botão de configurações */
+        .filter-toggle-btn {
+            background: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .filter-toggle-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .filter-toggle-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* Ícone do toggle com animação */
+        .filter-toggle-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .filter-toggle-btn[aria-expanded="true"] .filter-toggle-icon {
+            transform: rotate(180deg);
+        }
+        
+        /* Container do filtro com animação */
+        .filter-container {
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+        
+        .filter-container.collapsed {
+            max-height: 0;
+            opacity: 0;
+            margin-bottom: 0 !important;
+        }
+        
+        .filter-container:not(.collapsed) {
+            max-height: 1000px;
+            opacity: 1;
+        }
+        
+        /* Header do filtro com toggle */
+        .filter-header-with-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .filter-title {
+            margin: 0;
+            color: #333;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <!-- Header Moderno -->
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <!-- Logo com efeito hover -->
+                <a href="/" class="navbar-brand">
+                    <img src="~/images/quartetto-logo.png" alt="Quartetto Supermercados" class="logo">
+                </a>
+                
+                <!-- Informações do usuário e ações -->
+                <div class="navbar-nav ms-auto">
+                    <span class="user-info">
+                        <i class="bi bi-person me-1"></i>
+                        <!-- Alterado de "Loja" para "Usuário" para melhor identificação -->
+                        Usuário: <strong>@User.Identity.Name</strong>
+                    </span>
+                    
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <!-- Botão de configurações para administradores -->
+                        <div class="dropdown">
+                            <button class="btn btn-config dropdown-toggle" type="button" id="configDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-gear"></i>
+                                <span class="d-none d-sm-inline ms-1">Configurações</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="configDropdown">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="User" asp-action="Index">
+                                        <i class="bi bi-people"></i>
+                                        Usuários
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Tecnico" asp-action="Index">
+                                        <i class="bi bi-tools"></i>
+                                        Técnicos
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Relatorio" asp-action="Index">
+                                        <i class="bi bi-graph-up"></i>
+                                        Relatórios
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item danger" href="#" onclick="confirmarLimpezaCompleta()" title="Limpar todas as ordens de serviço">
+                                        <i class="bi bi-trash3"></i>
+                                        Limpar Tudo
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline w-100">
+                                        <button type="submit" class="dropdown-item danger">
+                                            <i class="bi bi-box-arrow-right"></i>
+                                            Sair
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Botão Nova Ordem de Serviço para usuários não-admin - mesmo tamanho do botão Sair -->
+                        <a asp-controller="OrdemServico" asp-action="Create" class="btn btn-primary me-2" style="padding: var(--spacing-xs) var(--spacing-sm); font-size: var(--font-size-xs); font-weight: var(--font-weight-medium); display: inline-flex; align-items: center; gap: var(--spacing-xs);">
+                            <i class="bi bi-plus-circle"></i>
+                            <span class="d-none d-sm-inline">Nova OS</span>
+                        </a>
+                        
+                        <!-- Apenas botão sair para usuários não-administradores -->
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-logout">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <span class="d-none d-sm-inline ms-1">Sair</span>
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main content area -->
+        <div style="background-color: var(--light-color); min-height: calc(100vh - 160px); display: flex; flex-direction: column; padding-bottom: 80px;">
+            <div class="container-fluid py-4 flex-grow-1">
+                @RenderBody()
+            </div>
+        </div>
+        
+        <!-- Footer com informações de copyright e versão -->
+        <footer class="footer text-muted">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <span>&copy; 2025 - COS - Todos os Direitos Reservados</span>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <small class="text-muted">Versão @(ViewBag.AppVersion ?? "1.1.1")</small>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    }
+    else
+    {
+        @RenderBody()
+    }
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    <!-- Tratamento global de erros para suprimir erros de extensões do Chrome -->
+    <script>
+        // Suprime erros específicos de extensões do Chrome que não afetam a funcionalidade
+        window.addEventListener('error', function(event) {
+            // Verifica se é o erro específico das extensões do Chrome
+            if (event.message && event.message.includes('A listener indicated an asynchronous response by returning true')) {
+                // Suprime este erro específico pois é causado por extensões do navegador
+                event.preventDefault();
+                return true;
+            }
+        });
+        
+        // Suprime erros de promises rejeitadas relacionadas a extensões
+        window.addEventListener('unhandledrejection', function(event) {
+            if (event.reason && event.reason.message && 
+                event.reason.message.includes('message channel closed before a response was received')) {
+                // Suprime este erro específico pois é causado por extensões do navegador
+                event.preventDefault();
+                return true;
+            }
+        });
+    </script>
+    
+    @if (User.Identity.IsAuthenticated)
+    {
+        <!-- Inclui a biblioteca SignalR -->
+        <script>
+            // Carrega a biblioteca SignalR dinamicamente
+            var signalrUrl = 'https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js';
+            var script = document.createElement('script');
+            script.src = signalrUrl;
+            
+            // Aguarda o carregamento da biblioteca antes de inicializar o SignalR
+            script.onload = function() {
+                initializeSignalR();
+            };
+            
+            document.head.appendChild(script);
+            
+            // Configuração global do SignalR para contador de mensagens não lidas
+            let globalConnection;
+            
+            function initializeSignalR() {
+                // Inicializa conexão SignalR global
+                globalConnection = new signalR.HubConnectionBuilder()
+                    .withUrl("/mensagemHub")
+                    .build();
+
+                // Inicia a conexão
+                globalConnection.start().then(function () {
+                    console.log("SignalR conectado globalmente");
+                    
+                    // Carrega contador inicial de mensagens não lidas
+                    loadUnreadMessagesCount();
+                }).catch(function (err) {
+                    console.error("Erro ao conectar SignalR globalmente: ", err.toString());
+                });
+
+                // Escuta atualizações do contador de mensagens não lidas
+                globalConnection.on("UnreadMessagesCount", function (data) {
+                    updateUnreadBadge(data.count);
+                });
+                
+                // Escuta atualizações do contador global de mensagens não lidas
+                globalConnection.on("GlobalUnreadMessagesCount", function (data) {
+                    updateUnreadBadge(data.count);
+                });
+            }
+            
+            // Função para carregar o contador inicial de mensagens não lidas
+            async function loadUnreadMessagesCount() {
+                try {
+                    const response = await fetch('/Mensagem/ContarNaoLidas');
+                    if (response.ok) {
+                        const data = await response.json();
+                        updateUnreadBadge(data.count || 0);
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar contador de mensagens:', error);
+                }
+            }
+            
+            // Função para atualizar o badge de mensagens não lidas
+            function updateUnreadBadge(count) {
+                const badge = document.getElementById('unread-badge');
+                if (badge) {
+                    if (count > 0) {
+                        badge.textContent = count > 99 ? '99+' : count;
+                        badge.style.display = 'inline';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            }
+            
+            // Função para abrir o modal de confirmação de limpeza completa
+            function confirmarLimpezaCompleta() {
+                // Reseta o checkbox e desabilita o botão
+                document.getElementById('confirmarLimpeza').checked = false;
+                document.getElementById('btnConfirmarLimpeza').disabled = true;
+                
+                // Exibe o modal
+                new bootstrap.Modal(document.getElementById('modalLimpezaCompleta')).show();
+            }
+            
+            // Função para executar a limpeza completa
+            function executarLimpezaCompleta() {
+                // Desabilita o botão para evitar cliques múltiplos
+                const btnConfirmar = document.getElementById('btnConfirmarLimpeza');
+                btnConfirmar.disabled = true;
+                btnConfirmar.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Executando...';
+                
+                // Faz a requisição AJAX para o endpoint de limpeza
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                fetch('/OrdemServico/LimparTodasOrdens', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: token ? `__RequestVerificationToken=${encodeURIComponent(token)}` : ''
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Fecha o modal
+                    bootstrap.Modal.getInstance(document.getElementById('modalLimpezaCompleta')).hide();
+                    
+                    if (data.success) {
+                         // Exibe mensagem de sucesso
+                         alert(data.message);
+                         
+                         // Recarrega a página após 2 segundos para mostrar o resultado
+                         setTimeout(() => {
+                             window.location.reload();
+                         }, 2000);
+                     } else {
+                         // Exibe mensagem de erro
+                         alert(data.message);
+                        
+                        // Reabilita o botão
+                        btnConfirmar.disabled = false;
+                        btnConfirmar.innerHTML = '<i class="bi bi-trash3 me-2"></i>Confirmar Limpeza';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    
+                    // Fecha o modal
+                    bootstrap.Modal.getInstance(document.getElementById('modalLimpezaCompleta')).hide();
+                    
+                    // Exibe mensagem de erro
+                     alert('Ocorreu um erro inesperado durante a limpeza.');
+                    
+                    // Reabilita o botão
+                    btnConfirmar.disabled = false;
+                    btnConfirmar.innerHTML = '<i class="bi bi-trash3 me-2"></i>Confirmar Limpeza';
+                });
+            }
+            
+            // Event listener para habilitar/desabilitar o botão de confirmação
+            document.addEventListener('DOMContentLoaded', function() {
+                const checkbox = document.getElementById('confirmarLimpeza');
+                const btnConfirmar = document.getElementById('btnConfirmarLimpeza');
+                
+                if (checkbox && btnConfirmar) {
+                    checkbox.addEventListener('change', function() {
+                        btnConfirmar.disabled = !this.checked;
+                    });
+                }
+                
+                // Funcionalidade do toggle do filtro
+                initializeFilterToggle();
+            });
+            
+            // Função para inicializar o toggle do filtro
+            function initializeFilterToggle() {
+                const toggleBtn = document.querySelector('.filter-toggle-btn');
+                const filterContainer = document.getElementById('filterContainer');
+                const toggleText = document.querySelector('.toggle-text');
+                
+                if (toggleBtn && filterContainer) {
+                    // Configura o filtro para iniciar sempre fechado
+                    filterContainer.classList.add('collapsed');
+                    toggleBtn.setAttribute('aria-expanded', 'false');
+                    
+                    // Event listener para o botão toggle
+                    toggleBtn.addEventListener('click', function() {
+                        const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                        
+                        // Atualiza o estado do botão
+                        this.setAttribute('aria-expanded', !isExpanded);
+                        
+                        // Atualiza o texto do botão
+                        if (toggleText) {
+                            toggleText.textContent = isExpanded ? 'Mostrar Filtros' : 'Ocultar Filtros';
+                        }
+                        
+                        // Controla a visibilidade do filtro
+                        if (isExpanded) {
+                            // Fechando o filtro
+                            filterContainer.classList.add('collapsed');
+                        } else {
+                            // Abrindo o filtro
+                            filterContainer.classList.remove('collapsed');
+                        }
+                    });
+                    
+                    // Event listener para quando o collapse do Bootstrap termina
+                    filterContainer.addEventListener('shown.bs.collapse', function() {
+                        filterContainer.classList.remove('collapsed');
+                    });
+                    
+                    filterContainer.addEventListener('hidden.bs.collapse', function() {
+                        filterContainer.classList.add('collapsed');
+                    });
+                }
+            }
+
+        </script>
+    }
+    
+    <!-- Modal para confirmação de limpeza completa -->
+    @if (User.IsInRole("Admin"))
+    {
+        <div class="modal fade" id="modalLimpezaCompleta" tabindex="-1" aria-labelledby="modalLimpezaCompletaLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="modalLimpezaCompletaLabel">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Confirmação de Limpeza Completa
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>ATENÇÃO:</strong> Esta ação é irreversível!
+                        </div>
+                        <p>Você está prestes a <strong>remover TODAS as ordens de serviço</strong> do sistema, incluindo:</p>
+                        <ul>
+                            <li><i class="bi bi-clipboard-x text-danger me-2"></i>Todas as ordens de serviço</li>
+                            <li><i class="bi bi-chat-text text-danger me-2"></i>Todas as mensagens relacionadas</li>
+                            <li><i class="bi bi-paperclip text-danger me-2"></i>Todos os anexos relacionados</li>
+                        </ul>
+                        <p class="text-danger"><strong>Esta operação não pode ser desfeita!</strong></p>
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" id="confirmarLimpeza">
+                            <label class="form-check-label" for="confirmarLimpeza">
+                                Eu entendo que esta ação é irreversível e confirmo a limpeza completa
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-2"></i>
+                            Cancelar
+                        </button>
+                        <button type="button" class="btn btn-danger" id="btnConfirmarLimpeza" disabled onclick="executarLimpezaCompleta()">
+                            <i class="bi bi-trash3 me-2"></i>
+                            Confirmar Limpeza
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+
+<script>
+    // Função para detectar e tratar expiração de sessão
+    function setupSessionMonitoring() {
+        // Intercepta todas as requisições AJAX para detectar erro 401 (não autorizado)
+        $(document).ajaxError(function(event, xhr, settings) {
+            if (xhr.status === 401) {
+                // Sessão expirou - mostra modal de aviso e redireciona para login
+                showSessionExpiredModal();
+            }
+        });
+        
+        // Monitora requisições fetch também
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            return originalFetch.apply(this, args)
+                .then(response => {
+                    if (response.status === 401) {
+                        showSessionExpiredModal();
+                    }
+                    return response;
+                });
+        };
+    }
+    
+    // Função para mostrar modal de sessão expirada
+    function showSessionExpiredModal() {
+        // Remove modais existentes para evitar duplicação
+        $('#sessionExpiredModal').remove();
+        
+        // Cria o modal dinamicamente
+        const modalHtml = `
+            <div class="modal fade" id="sessionExpiredModal" tabindex="-1" role="dialog" aria-labelledby="sessionExpiredModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning text-dark">
+                            <h5 class="modal-title" id="sessionExpiredModalLabel">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Sessão Expirada
+                            </h5>
+                        </div>
+                        <div class="modal-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-clock fa-3x text-warning"></i>
+                            </div>
+                            <h6>Sua sessão expirou por inatividade</h6>
+                            <p class="text-muted">Por motivos de segurança, você será redirecionado para a página de login.</p>
+                            <div class="mt-3">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="sr-only">Carregando...</span>
+                                </div>
+                                <span class="ml-2">Redirecionando em <span id="countdown">5</span> segundos...</span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" onclick="redirectToLogin()">
+                                <i class="fas fa-sign-in-alt"></i>
+                                Fazer Login Agora
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Adiciona o modal ao body
+        $('body').append(modalHtml);
+        
+        // Mostra o modal
+        $('#sessionExpiredModal').modal('show');
+        
+        // Inicia contagem regressiva
+        let countdown = 5;
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            $('#countdown').text(countdown);
+            
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                redirectToLogin();
+            }
+        }, 1000);
+    }
+    
+    // Função para redirecionar para login
+    function redirectToLogin() {
+        window.location.href = '@Url.Action("Login", "Account")';
+    }
+    
+    // Inicializa o monitoramento quando a página carrega
+    $(document).ready(function() {
+        setupSessionMonitoring();
+    });
+</script>

@@ -1,0 +1,1743 @@
+@model OrdemServicoMVC.ViewModels.OrdemServicoIndexViewModel
+@{
+    ViewData["Title"] = "Ordens de Serviço";
+}
+
+@* Token CSRF para requisições AJAX *@
+@Html.AntiForgeryToken()
+
+<style>
+    /* Alternância de cores entre linhas - com máxima prioridade */
+    .modern-table tbody tr.modern-table-row:nth-child(odd) {
+        background: #f8f9fa !important;
+        background-color: #f8f9fa !important;
+        background-image: none !important;
+    }
+    
+    .modern-table tbody tr.modern-table-row:nth-child(even) {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        background-image: none !important;
+    }
+    
+    .modern-table tbody tr.modern-table-row:hover {
+        background: #e3f2fd !important;
+        background-color: #e3f2fd !important;
+        background-image: none !important;
+    }
+    
+    .modern-table tbody tr.modern-table-row td {
+        background: inherit !important;
+        background-color: inherit !important;
+        background-image: none !important;
+    }
+    
+    /* Estilo para ordens de ALTA PRIORIDADE - sobrescreve alternância de cores */
+    .modern-table tbody tr.modern-table-row.ordem-alta-prioridade {
+        background: rgba(220, 53, 69, 0.15) !important;
+        background-color: rgba(220, 53, 69, 0.15) !important;
+        background-image: none !important;
+        border-left: 6px solid #dc3545 !important;
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2) !important;
+    }
+    
+    .modern-table tbody tr.modern-table-row.ordem-alta-prioridade:hover {
+        background: rgba(220, 53, 69, 0.25) !important;
+        background-color: rgba(220, 53, 69, 0.25) !important;
+        background-image: none !important;
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4) !important;
+    }
+    
+    .modern-table tbody tr.modern-table-row.ordem-alta-prioridade td {
+        background: inherit !important;
+        background-color: inherit !important;
+        background-image: none !important;
+    }
+
+    /* Badge de Anexos - visível na coluna principal */
+    .badge-anexos-info {
+        display: inline-flex;
+        align-items: center;
+        background: linear-gradient(135deg, #fd7e14 0%, #e55a00 100%);
+        color: #fff !important;
+        font-size: 0.72rem;
+        font-weight: 500;
+        padding: 4px 9px;
+        border-radius: 20px;
+        box-shadow: 0 2px 6px rgba(253,126,20,0.35);
+        transition: transform 0.15s, box-shadow 0.15s;
+        text-decoration: none;
+        user-select: none;
+    }
+    .badge-anexos-info:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(253,126,20,0.5);
+    }
+    .badge-anexos-info strong {
+        color: #fff !important;
+    }
+</style>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Container principal com animação de entrada e largura customizada -->
+<div class="container-fluid px-4 fadeIn" style="max-width: 1900px; margin: 0 auto;">
+    <div class="row">
+        <div class="col-12">
+            <!-- Card principal modernizado -->
+            <div class="modern-card main-card" data-brutal-reveal>
+                <!-- Corpo do card principal -->
+                <div class="modern-card-body">
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <!-- Header com botão toggle para filtros -->
+                        <div class="filter-header-with-toggle d-none d-lg-flex">
+                            <div class="filter-title">
+                                <i class="bi bi-funnel me-2"></i>
+                                <span class="filter-title-text">Filtros Avançados</span>
+                                <small class="text-muted ms-2 filter-subtitle">Refine sua busca</small>
+                            </div>
+                            <button class="filter-toggle-btn" type="button" data-bs-toggle="collapse" data-bs-target="#filterContainer" aria-expanded="false" aria-controls="filterContainer">
+                                <span class="toggle-text">Mostrar</span>
+                                <i class="bi bi-chevron-down filter-toggle-icon"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Container do filtro com collapse -->
+                        <div class="filter-container collapse" id="filterContainer">
+                            <div class="filter-card mb-4">
+                                <div class="filter-body">
+                                    <!-- Formulário de filtros modernizado em linha única -->
+                                    <form method="get" id="filterForm" class="modern-form">
+                                        
+                                        <!-- Busca Global -->
+                                        <div class="row g-2 mb-3">
+                                            <div class="col-12">
+                                                <div class="d-flex flex-column align-items-center">
+                                                    <label for="buscaGlobal" class="form-label-modern text-center mb-2">
+                                                        <i class="bi bi-search me-1"></i>
+                                                        BUSCA GLOBAL
+                                                    </label>
+                                                    <input type="text" 
+                                                           class="form-control-modern" 
+                                                           id="buscaGlobal" 
+                                                           name="busca" 
+                                                           value="@ViewBag.CurrentBusca" 
+                                                           placeholder="Buscar por ID, descrição, solicitante, técnico..."
+                                                           style="text-align: center; max-width: 600px; width: 100%;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Todos os filtros em uma única linha com espaçamento reduzido -->
+                                        <div class="row g-2 align-items-end justify-content-center filters-responsive-grid">
+                                            <!-- Filtro de Status -->
+                                            <div class="col-auto filters-field">
+                                                <label for="statusFilter" class="form-label-modern text-center d-block">
+                                                    <i class="bi bi-circle-fill me-1"></i>
+                                                    STATUS
+                                                </label>
+                                                <select class="form-select-modern" id="statusFilter" name="status" style="min-width: 140px;">
+                                                    <option value="">Todos os status</option>
+                                                    <option value="1" selected="@(ViewBag.CurrentStatus?.ToString() == "1")">📂 Aberta</option>
+                                                    <option value="2" selected="@(ViewBag.CurrentStatus?.ToString() == "2")">⚙️ Em Andamento</option>
+                                                    <option value="3" selected="@(ViewBag.CurrentStatus?.ToString() == "3")">✅ Concluída</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <!-- Filtro de Prioridade -->
+                                            <div class="col-auto filters-field">
+                                                <label for="prioridadeFilter" class="form-label-modern text-center d-block">
+                                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                                    PRIORIDADE
+                                                </label>
+                                                <select class="form-select-modern" id="prioridadeFilter" name="prioridade" style="min-width: 160px;">
+                                                    <option value="">Todas as Prioridades</option>
+                                                    <option value="1" selected="@(ViewBag.CurrentPrioridade?.ToString() == "1")">🔵 Baixa</option>
+                                                    <option value="2" selected="@(ViewBag.CurrentPrioridade?.ToString() == "2")">🟡 Média</option>
+                                                    <option value="3" selected="@(ViewBag.CurrentPrioridade?.ToString() == "3")">🔴 Alta</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <!-- Filtro de Técnico -->
+                                            <div class="col-auto filters-field">
+                                                <label for="tecnicoFilter" class="form-label-modern text-center d-block">
+                                                    <i class="bi bi-person-gear me-1"></i>
+                                                    TÉCNICO
+                                                </label>
+                                                <select class="form-select-modern" id="tecnicoFilter" name="tecnico" style="min-width: 140px;">
+                                                    <option value="">Todos os Técnicos</option>
+                                                    <option value="sem_tecnico" selected="@(ViewBag.CurrentTecnico?.ToString() == "sem_tecnico")">⚠️ Sem técnico</option>
+                                                    @if (Model.TecnicosList != null)
+                                                    {
+                                                        @foreach (var tecnico in Model.TecnicosList)
+                                                        {
+                                                            <option value="@tecnico.Value" selected="@(ViewBag.CurrentTecnico?.ToString() == tecnico.Value)">👤 @tecnico.Text</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                            
+                                            <!-- Filtro de Loja -->
+                                            <div class="col-auto filters-field">
+                                                <label for="lojaFilter" class="form-label-modern text-center d-block">
+                                                    <i class="bi bi-shop me-1"></i>
+                                                    LOJA
+                                                </label>
+                                                <select class="form-select-modern" id="lojaFilter" name="loja" style="min-width: 120px;">
+                                                    <option value="">Todas as Lojas</option>
+                                                    @if (Model.LojasList != null)
+                                                    {
+                                                        @foreach (var loja in Model.LojasList.Skip(1))
+                                                        {
+                                                            <option value="@loja.Value" selected="@(ViewBag.CurrentLoja?.ToString() == loja.Value)">🏪 @loja.Text</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                            
+                                            <!-- Filtro de Setor -->
+                                            <div class="col-auto filters-field">
+                                                <label for="setorFilter" class="form-label-modern text-center d-block">
+                                                    <i class="bi bi-building me-1"></i>
+                                                    SETOR
+                                                </label>
+                                                <select class="form-select-modern" id="setorFilter" name="setor" style="min-width: 140px;">
+                                                    <option value="">Todos os Setores</option>
+                                                    <!-- Setores baseados no enum SetorEnum -->
+                                                    <option value="1" selected="@(ViewBag.CurrentSetor?.ToString() == "1")">🛒 Frente de Caixa</option>
+                                                    <option value="2" selected="@(ViewBag.CurrentSetor?.ToString() == "2")">💰 Financeiro</option>
+                                                    <option value="3" selected="@(ViewBag.CurrentSetor?.ToString() == "3")">📄 Faturamento</option>
+                                                    <option value="4" selected="@(ViewBag.CurrentSetor?.ToString() == "4")">🏢 Administrativo</option>
+                                                    <option value="5" selected="@(ViewBag.CurrentSetor?.ToString() == "5")">👥 RH</option>
+                                                    <option value="6" selected="@(ViewBag.CurrentSetor?.ToString() == "6")">🛡️ Prevenção</option>
+                                                    <option value="7" selected="@(ViewBag.CurrentSetor?.ToString() == "7")">👔 Gerência</option>
+                                                    <option value="8" selected="@(ViewBag.CurrentSetor?.ToString() == "8")">📊 Contabilidade</option>
+                                                    <option value="9" selected="@(ViewBag.CurrentSetor?.ToString() == "9")">🏛️ Patrimônio</option>
+                                                    <option value="10" selected="@(ViewBag.CurrentSetor?.ToString() == "10")">🛍️ Compras</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <!-- Filtro de Data Início -->
+                                            <div class="col-auto filters-field">
+                                                <label for="dataInicioFilter" class="form-label-modern text-center d-block">
+                                                    <i class="bi bi-calendar-event me-1"></i>
+                                                    DATA INÍCIO
+                                                </label>
+                                                <input type="date" class="form-control-modern" id="dataInicioFilter" name="dataInicio" value="@ViewBag.CurrentDataInicio" style="min-width: 140px;">
+                                            </div>
+                                            
+                                            <!-- Filtro de Data Fim -->
+                                            <div class="col-auto filters-field">
+                                                <label for="dataFimFilter" class="form-label-modern text-center d-block">
+                                                    <i class="bi bi-calendar-check me-1"></i>
+                                                    DATA FIM
+                                                </label>
+                                                <input type="date" class="form-control-modern" id="dataFimFilter" name="dataFim" value="@ViewBag.CurrentDataFim" style="min-width: 140px;">
+                                            </div>
+                                        </div>
+                                                                                <!-- Botões de Ação Centralizados -->
+                                        <div class="row mt-3">
+                                            <div class="col-12">
+                                                <div class="d-flex flex-wrap gap-2 justify-content-center filter-actions">
+                                                    <button type="submit" class="btn btn-apply-filters">
+                                                        <i class="bi bi-search me-2"></i>
+                                                        Aplicar
+                                                    </button>
+                                                    <button type="button" class="btn btn-clear-filters" onclick="clearFilters()">
+                                                        <i class="bi bi-arrow-clockwise me-2"></i>
+                                                        Limpar
+                                                    </button>
+                                                    <!-- Botão Gerar Checklist (Apenas Admin) -->
+                                                    @if (User.IsInRole("Admin"))
+                                                    {
+                                                        <button type="button" class="btn btn-primary" id="btnGerarChecklist" onclick="gerarChecklist()" disabled>
+                                                            <i class="bi bi-file-earmark-check me-2"></i>
+                                                            Gerar Checklist
+                                                            <span class="badge bg-white text-primary ms-1" id="badgeChecklistCount" style="display: none;">0</span>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <!-- Dashboard de Performance Modernizado -->
+                        <div class="mb-4 d-none d-lg-block" id="dashboard-container">
+                            <div class="dashboard-performance">
+                                <div class="dashboard-toggle d-lg-none">
+                                    <button class="btn btn-dashboard-toggle" type="button" id="dashboardMetricsToggle" aria-expanded="false" aria-controls="dashboardMetrics">
+                                        <div class="toggle-label">
+                                            <i class="bi bi-graph-up"></i>
+                                            <span class="toggle-text">Ver indicadores</span>
+                                        </div>
+                                        <i class="bi bi-chevron-down toggle-icon" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <div class="dashboard-metrics" id="dashboardMetrics">
+                                    <!-- Métricas Essenciais -->
+                                    <div class="metric-item metric-primary">
+                                        <div class="metric-icon">
+                                            <i class="bi bi-clipboard-data"></i>
+                                        </div>
+                                        <div class="metric-content">
+                                            <span class="metric-value" id="total-ordens-abertas">-</span>
+                                            <span class="metric-label">Total</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="metric-item metric-success">
+                                        <div class="metric-icon">
+                                            <i class="bi bi-check-circle"></i>
+                                        </div>
+                                        <div class="metric-content">
+                                            <span class="metric-value" id="ordens-concluidas">-</span>
+                                            <span class="metric-label">Concluídas</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="metric-item metric-info">
+                                        <div class="metric-icon">
+                                            <i class="bi bi-folder2-open"></i>
+                                        </div>
+                                        <div class="metric-content">
+                                            <span class="metric-value" id="status-aberta">-</span>
+                                            <span class="metric-label">Abertas</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="metric-item metric-warning">
+                                        <div class="metric-icon">
+                                            <i class="bi bi-gear"></i>
+                                        </div>
+                                        <div class="metric-content">
+                                            <span class="metric-value" id="status-em-andamento">-</span>
+                                            <span class="metric-label">Em Andamento</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="metric-item metric-danger">
+                                        <div class="metric-icon">
+                                            <i class="bi bi-exclamation-triangle"></i>
+                                        </div>
+                                        <div class="metric-content">
+                                            <span class="metric-value" id="prioridade-alta">-</span>
+                                            <span class="metric-label">Prioridade Alta</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                @if (Model.OrdensServico.Any())
+        {
+            <!-- Tabela moderna de ordens de serviço (desktop) -->
+            <div class="modern-table-container d-none d-lg-block">
+                <div class="table-responsive">
+                    <table class="table modern-table">
+                        <thead class="modern-table-header">
+                            <tr>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <th style="width: 40px; text-align: center;">
+                                        <input type="checkbox" class="form-check-input" id="checkAllOrdens" onclick="toggleAllOrdens(this)" title="Selecionar todas">
+                                    </th>
+                                }
+                                <th class="table-full-info-col">
+                                    <i class="bi bi-clipboard-check me-2"></i>
+                                    SOLICITAÇÃO
+                                </th>
+                                <th class="table-actions-col">
+                                    <i class="bi bi-gear me-2"></i>
+                                    Prioridade • Técnico • Status
+                                </th>
+                            </tr>
+                        </thead>
+                    <tbody>
+                        @foreach (var ordem in Model.OrdensServico)
+                        {
+                            <!-- Linha separadora entre as ordens de serviço -->
+                            <tr class="modern-table-row @(ordem.Status == OrdemServicoMVC.Models.StatusEnum.Concluida ? "ordem-concluida" : ordem.Status == OrdemServicoMVC.Models.StatusEnum.Aberta ? "ordem-aberta" : "") @(ordem.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Alta && ordem.Status != OrdemServicoMVC.Models.StatusEnum.Concluida ? "ordem-alta-prioridade" : "") row-open-details" style="border-bottom: 2px solid #e9ecef;" data-order-id="@ordem.Id">
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <td style="text-align: center; vertical-align: middle;">
+                                        <input type="checkbox" class="form-check-input ordem-checkbox" value="@ordem.Id" onclick="atualizarContadorChecklist(event)">
+                                    </td>
+                                }
+                                <td class="table-full-info-col">
+                                    <div class="ordem-info-container">
+                                        <!-- Título e Badge de Mensagens -->
+                                        <div class="ordem-header">
+                                            <strong class="ordem-titulo">@ordem.Titulo</strong>
+                                            @{ var mensagensNaoLidas = Model.MensagensNaoLidasCount != null && Model.MensagensNaoLidasCount.ContainsKey(ordem.Id) ? Model.MensagensNaoLidasCount[ordem.Id] : 0; }
+                                            @if (mensagensNaoLidas > 0)
+                                            {
+                                                <span class="os-unread-badge">@mensagensNaoLidas</span>
+                                            }
+                                        </div>
+                                        
+                                        <!-- Descrição -->
+                                        @if (!string.IsNullOrEmpty(ordem.Descricao))
+                                        {
+                                            <div class="ordem-descricao">
+                                                <small class="text-muted">@ordem.Descricao</small>
+                                            </div>
+                                        }
+                                        
+                                        <!-- Informações em linha horizontal -->
+                                        <div class="ordem-info-badges d-flex flex-wrap">
+                                            <span class="badge badge-setor-info">
+                                                <i class="bi bi-building me-1"></i>
+                                                <strong>Setor:</strong> @ordem.Setor.ToString().Replace("FrenteDeCaixa", "Frente de Caixa")
+                                            </span>
+                                            
+                                            <span class="badge badge-user-info">
+                                                <i class="bi bi-person me-1"></i>
+                                                <strong>Criado por:</strong> @ordem.UsuarioCriador?.NomeLoja
+                                            </span>
+                                            
+                                            <span class="badge badge-date-info">
+                                                <i class="bi bi-calendar me-1"></i>
+                                                <strong>Data:</strong> @ordem.DataCriacao.ToString("dd/MM/yyyy 'às' HH:mm")
+                                            </span>
+                                            
+                                            @* Badge de anexos - usa contagem total (diretos + chat) *@
+                                            @{ var totalAnexos = Model.AnexosCount.ContainsKey(ordem.Id) ? Model.AnexosCount[ordem.Id] : 0; }
+                                            @if (totalAnexos > 0)
+                                            {
+                                                <span class="badge badge-anexos-info" 
+                                                      style="cursor:pointer;"
+                                                      title="@totalAnexos anexo(s) - clique para visualizar"
+                                                      onclick="event.stopPropagation(); abrirModalDetalhes(@ordem.Id)">
+                                                    <i class="bi bi-paperclip me-1"></i>
+                                                    <strong>@totalAnexos Anexo(s)</strong>
+                                                    <i class="bi bi-eye ms-1"></i>
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="table-actions-col">
+                                    <div class="os-field-stack">
+                                        
+                                        @* Botão de download de anexos - só aparece se a ordem tiver anexos *@
+                                        @if (ordem.Anexos != null && ordem.Anexos.Any())
+                                        {
+                                            @* Dropdown com lista de anexos disponíveis para download *@
+                                            <div class="dropdown">
+                                                <button class="modern-btn modern-btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown" title="Baixar Anexos">
+                                                    <i class="bi bi-download"></i>
+                                                    Anexos (@ordem.Anexos.Count())
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    @* Lista cada anexo com link para download *@
+                                                    @foreach (var anexo in ordem.Anexos)
+                                                    {
+                                                        <li>
+                                                            @* Link para download do anexo individual *@
+                                                            <a class="dropdown-item" href="@Url.Action("Download", "Anexo", new { id = anexo.Id })" target="_blank">
+                                                                <i class="bi bi-file-earmark-image me-2"></i>
+                                                                @anexo.NomeArquivo
+                                                                @* Exibe o tamanho do arquivo em KB *@
+                                                                <small class="text-muted">(@(Math.Round((double)anexo.TamanhoBytes / 1024, 1)) KB)</small>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        }
+                                        
+                                        <div class="d-flex flex-column gap-1 align-items-stretch">
+                                            <div class="os-field">
+                                                <div class="os-label">Prioridade</div>
+                                                @if (User.IsInRole("Admin"))
+                                                {
+                                                    <select class="form-select form-select-sm prioridade-dropdown" data-ordem-id="@ordem.Id" data-current-value="@((int)ordem.Prioridade)" style="@(ordem.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Alta ? "background-color: #f8d7da; border-color: #f5c6cb; color: #721c24;" : ordem.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Media ? "background-color: #fff3cd; border-color: #ffeaa7; color: #856404;" : "background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460;")">
+                                                        @foreach (var prioridade in Enum.GetValues<OrdemServicoMVC.Models.PrioridadeEnum>())
+                                                        {
+                                                            var prioridadeIcon = (int)prioridade == 3 ? "🔴" : (int)prioridade == 2 ? "🟡" : "🔵";
+                                                            if ((int)prioridade == (int)ordem.Prioridade)
+                                                            {
+                                                                <option value="@((int)prioridade)" selected>@prioridadeIcon @prioridade.ToString()</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@((int)prioridade)">@prioridadeIcon @prioridade.ToString()</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                }
+                                                else
+                                                {
+                                                    @switch (ordem.Prioridade)
+                                                    {
+                                                        case OrdemServicoMVC.Models.PrioridadeEnum.Alta:
+                                                        <span class="os-badge badge-prioridade-alta">🔴 Alta</span>
+                                                            break;
+                                                        case OrdemServicoMVC.Models.PrioridadeEnum.Media:
+                                                        <span class="os-badge badge-prioridade-media">🟡 Média</span>
+                                                            break;
+                                                        case OrdemServicoMVC.Models.PrioridadeEnum.Baixa:
+                                                        <span class="os-badge badge-prioridade-baixa">🔵 Baixa</span>
+                                                            break;
+                                                    }
+                                                }
+                                            </div>
+
+                                            <div class="os-field">
+                                                <div class="os-label">Técnico</div>
+                                                @if (User.IsInRole("Admin"))
+                                                {
+                                                    <select class="form-select form-select-sm tecnico-dropdown" data-ordem-id="@ordem.Id" data-current-value="@(ordem.TecnicoResponsavelId ?? "")">
+                                                        @foreach (var tecnico in Model.TecnicosList)
+                                                        {
+                                                            if (tecnico.Value == (ordem.TecnicoResponsavelId ?? ""))
+                                                            {
+                                                                <option value="@tecnico.Value" selected>@tecnico.Text</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@tecnico.Value">@tecnico.Text</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                }
+                                                else
+                                                {
+                                                    <small class="os-tech-name">@(ordem.TecnicoResponsavel?.NomeLoja ?? "Não atribuído")</small>
+                                                }
+                                            </div>
+
+                                            <div class="os-field">
+                                                <div class="os-label">Status</div>
+                                                @if (User.IsInRole("Admin"))
+                                                {
+                                                    <select class="form-select form-select-sm status-dropdown" data-ordem-id="@ordem.Id" data-current-value="@((int)ordem.Status)" style="@(ordem.Status == OrdemServicoMVC.Models.StatusEnum.Aberta ? "background-color: #fff3cd; border-color: #ffeaa7; color: #856404;" : ordem.Status == OrdemServicoMVC.Models.StatusEnum.EmAndamento ? "background-color: #d1ecf1; border-color: #74c0fc; color: #0c5460;" : "background-color: #d4edda; border-color: #c3e6cb; color: #155724;")">
+                                                        @foreach (var status in Model.StatusList)
+                                                        {
+                                                            var statusIcon = status.Value == "1" ? "📂" : status.Value == "2" ? "⚙️" : "✅";
+                                                            if (status.Value == ((int)ordem.Status).ToString())
+                                                            {
+                                                                <option value="@status.Value" selected>@statusIcon @status.Text</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@status.Value">@statusIcon @status.Text</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                }
+                                                else
+                                                {
+                                                    @switch (ordem.Status)
+                                                    {
+                                                        case OrdemServicoMVC.Models.StatusEnum.Aberta:
+                                                        <span class="os-badge badge-status-aberta">📂 Aberta</span>
+                                                            break;
+                                                        case OrdemServicoMVC.Models.StatusEnum.EmAndamento:
+                                                        <span class="os-badge badge-status-andamento">⚙️ Em Andamento</span>
+                                                            break;
+                                                        case OrdemServicoMVC.Models.StatusEnum.Concluida:
+                                                        <span class="os-badge badge-status-concluida">✅ Concluída</span>
+                                                            break;
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+            <!-- Cards responsivos para mobile -->
+            <div class="order-mobile-grid d-lg-none">
+                @foreach (var ordem in Model.OrdensServico)
+                {
+                    var mensagensNaoLidas = Model.MensagensNaoLidasCount != null && Model.MensagensNaoLidasCount.ContainsKey(ordem.Id) ? Model.MensagensNaoLidasCount[ordem.Id] : 0;
+                    <article class="order-mobile-card @(ordem.Status == OrdemServicoMVC.Models.StatusEnum.Concluida ? "order-mobile-card--done" : "")">
+                        <header class="order-mobile-card__header">
+                            <div>
+                                <p class="order-mobile-card__id">
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <input type="checkbox" class="form-check-input ordem-checkbox me-2" value="@ordem.Id" onclick="atualizarContadorChecklist(event)">
+                                    }
+                                    #@ordem.Id
+                                </p>
+                                <h5 class="order-mobile-card__title">@ordem.Titulo</h5>
+                                @if (mensagensNaoLidas > 0)
+                                {
+                                    <span class="order-mobile-chip chip-unread">
+                                        <i class="bi bi-chat-dots me-1"></i>
+                                        @mensagensNaoLidas nov@(mensagensNaoLidas > 1 ? "as" : "a")
+                                    </span>
+                                }
+                            </div>
+                            <span class="order-mobile-chip @(
+                                ordem.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Alta ? "chip-prioridade-alta" :
+                                ordem.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Media ? "chip-prioridade-media" :
+                                "chip-prioridade-baixa")">
+                                @(ordem.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Alta ? "🔴 Alta" :
+                                  ordem.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Media ? "🟡 Média" :
+                                  "🔵 Baixa")
+                            </span>
+                        </header>
+                        <div class="order-mobile-card__body">
+                            @if (!string.IsNullOrEmpty(ordem.Descricao))
+                            {
+                                <p class="order-mobile-description">@ordem.Descricao</p>
+                            }
+                            <div class="order-mobile-meta">
+                                <span><i class="bi bi-building me-1"></i>@ordem.Setor.ToString().Replace("FrenteDeCaixa", "Frente de Caixa")</span>
+                                <span><i class="bi bi-shop me-1"></i>@ordem.UsuarioCriador?.NomeLoja</span>
+                                <span><i class="bi bi-calendar me-1"></i>@ordem.DataCriacao.ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
+                            <div class="order-mobile-field-group">
+                                <div>
+                                    <div class="order-mobile-field-label">Prioridade</div>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <select class="form-select form-select-sm prioridade-dropdown w-100"
+                                                data-ordem-id="@ordem.Id"
+                                                data-current-value="@((int)ordem.Prioridade)">
+                                            @foreach (var prioridade in Enum.GetValues<OrdemServicoMVC.Models.PrioridadeEnum>())
+                                            {
+                                                var prioridadeIcon = (int)prioridade == 3 ? "🔴" : (int)prioridade == 2 ? "🟡" : "🔵";
+                                                <option value="@((int)prioridade)" selected="@((int)prioridade == (int)ordem.Prioridade)">@prioridadeIcon @prioridade.ToString()</option>
+                                            }
+                                        </select>
+                                    }
+                                    else
+                                    {
+                                        <span class="order-mobile-chip @(
+                                            ordem.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Alta ? "chip-prioridade-alta" :
+                                            ordem.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Media ? "chip-prioridade-media" :
+                                            "chip-prioridade-baixa")">
+                                            @(ordem.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Alta ? "🔴 Alta" :
+                                              ordem.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Media ? "🟡 Média" :
+                                              "🔵 Baixa")
+                                        </span>
+                                    }
+                                </div>
+                                <div>
+                                    <div class="order-mobile-field-label">Técnico</div>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <select class="form-select form-select-sm tecnico-dropdown w-100"
+                                                data-ordem-id="@ordem.Id"
+                                                data-current-value="@(ordem.TecnicoResponsavelId ?? "")">
+                                            @foreach (var tecnico in Model.TecnicosList)
+                                            {
+                                                <option value="@tecnico.Value" selected="@(tecnico.Value == (ordem.TecnicoResponsavelId ?? ""))">@tecnico.Text</option>
+                                            }
+                                        </select>
+                                    }
+                                    else
+                                    {
+                                        <span class="order-mobile-chip chip-neutral">
+                                            @(ordem.TecnicoResponsavel?.NomeLoja ?? "Não atribuído")
+                                        </span>
+                                    }
+                                </div>
+                                <div>
+                                    <div class="order-mobile-field-label">Status</div>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <select class="form-select form-select-sm status-dropdown w-100"
+                                                data-ordem-id="@ordem.Id"
+                                                data-current-value="@((int)ordem.Status)">
+                                            @foreach (var status in Model.StatusList)
+                                            {
+                                                var statusIcon = status.Value == "1" ? "📂" : status.Value == "2" ? "⚙️" : "✅";
+                                                <option value="@status.Value" selected="@(status.Value == ((int)ordem.Status).ToString())">@statusIcon @status.Text</option>
+                                            }
+                                        </select>
+                                    }
+                                    else
+                                    {
+                                        <span class="order-mobile-chip @(
+                                            ordem.Status == OrdemServicoMVC.Models.StatusEnum.Aberta ? "chip-status-open" :
+                                            ordem.Status == OrdemServicoMVC.Models.StatusEnum.EmAndamento ? "chip-status-progress" :
+                                            "chip-status-done")">
+                                            @(ordem.Status == OrdemServicoMVC.Models.StatusEnum.Aberta ? "📂 Aberta" :
+                                              ordem.Status == OrdemServicoMVC.Models.StatusEnum.EmAndamento ? "⚙️ Em andamento" :
+                                              "✅ Concluída")
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <footer class="order-mobile-card__footer">
+                            <a asp-controller="Mensagem"
+                           asp-action="Chat"
+                           asp-route-id="@ordem.Id"
+                           class="btn btn-primary w-100">
+                            <i class="bi bi-chat-dots me-1"></i>Mensagens
+                            </a>
+                        </footer>
+                    </article>
+                }
+            </div>
+
+            <!-- Paginação -->
+            @if (Model.TotalPaginas > 1)
+            {
+                <nav aria-label="Navegação de páginas">
+                    <ul class="pagination">
+                        @if (Model.PaginaAtual > 1)
+                        {
+                            <li class="page-item">
+                                <!-- Link para página anterior preservando todos os filtros -->
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="@(Model.PaginaAtual - 1)"
+                                   asp-route-status="@ViewBag.CurrentStatus"
+                                   asp-route-prioridade="@ViewBag.CurrentPrioridade"
+                                   asp-route-tecnico="@ViewBag.CurrentTecnico"
+                                   asp-route-loja="@ViewBag.CurrentLoja"
+                                   asp-route-setor="@ViewBag.CurrentSetor"
+                                   asp-route-dataInicio="@ViewBag.CurrentDataInicio"
+                                   asp-route-dataFim="@ViewBag.CurrentDataFim">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        }
+
+                        @for (int i = Math.Max(1, Model.PaginaAtual - 2); i <= Math.Min(Model.TotalPaginas, Model.PaginaAtual + 2); i++)
+                        {
+                            <li class="page-item @(i == Model.PaginaAtual ? "active" : "")">
+                                <!-- Link para página específica preservando todos os filtros -->
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="@i"
+                                   asp-route-status="@ViewBag.CurrentStatus"
+                                   asp-route-prioridade="@ViewBag.CurrentPrioridade"
+                                   asp-route-tecnico="@ViewBag.CurrentTecnico"
+                                   asp-route-loja="@ViewBag.CurrentLoja"
+                                   asp-route-setor="@ViewBag.CurrentSetor"
+                                   asp-route-dataInicio="@ViewBag.CurrentDataInicio"
+                                   asp-route-dataFim="@ViewBag.CurrentDataFim">@i</a>
+                            </li>
+                        }
+
+                        @if (Model.PaginaAtual < Model.TotalPaginas)
+                        {
+                            <li class="page-item">
+                                <!-- Link para próxima página preservando todos os filtros -->
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="@(Model.PaginaAtual + 1)"
+                                   asp-route-status="@ViewBag.CurrentStatus"
+                                   asp-route-prioridade="@ViewBag.CurrentPrioridade"
+                                   asp-route-tecnico="@ViewBag.CurrentTecnico"
+                                   asp-route-loja="@ViewBag.CurrentLoja"
+                                   asp-route-setor="@ViewBag.CurrentSetor"
+                                   asp-route-dataInicio="@ViewBag.CurrentDataInicio"
+                                   asp-route-dataFim="@ViewBag.CurrentDataFim">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-inbox" style="font-size: 4rem; color: #6c757d;"></i>
+                <h4 class="mt-3 text-muted">Nenhuma ordem de serviço encontrada</h4>
+                @* Exibe o botão apenas para usuários não-administradores *@
+                @if (!User.IsInRole("Admin"))
+                {
+                    <p class="text-muted">Clique no botão abaixo para criar sua primeira ordem de serviço.</p>
+                    <a asp-action="Create" class="btn btn-primary" style="padding: 6px 16px; font-size: 0.9rem;">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Criar Ordem
+                    </a>
+                }
+                else
+                {
+                    <p class="text-muted">Administradores gerenciam ordens através do painel administrativo.</p>
+                }
+            </div>
+        }
+
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Consolidação de todos os event listeners DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function() {
+                var alerts = document.querySelectorAll('.alert');
+                alerts.forEach(function(alert) {
+                    var bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+
+            document.querySelectorAll('.status-dropdown').forEach(function(dropdown) {
+                dropdown.addEventListener('change', function() {
+                    var ordemId = this.getAttribute('data-ordem-id');
+                    var novoStatus = this.value;
+                    var currentValue = this.getAttribute('data-current-value');
+                    if (novoStatus !== currentValue) {
+                        if (novoStatus === '3') {
+                            const row = this.closest('tr');
+                            const tecnicoDropdown = row.querySelector('.tecnico-dropdown');
+                            if (!tecnicoDropdown || !tecnicoDropdown.value || tecnicoDropdown.value === '') {
+                                alert('Não é possível marcar a ordem como concluída sem atribuir um técnico responsável.');
+                                this.value = currentValue;
+                                return;
+                            }
+                        }
+                        atualizarOrdem(ordemId, { status: novoStatus }, this);
+                    }
+                });
+            });
+
+            // Event listener para dropdowns de técnico
+            document.querySelectorAll('.tecnico-dropdown').forEach(function(dropdown) {
+                dropdown.addEventListener('change', function() {
+                    var ordemId = this.getAttribute('data-ordem-id');
+                    var novoTecnico = this.value;
+                    var currentValue = this.getAttribute('data-current-value');
+                    
+                    if (novoTecnico !== currentValue) {
+                        atualizarOrdem(ordemId, { tecnicoId: novoTecnico }, this);
+                    }
+                });
+            });
+
+            // Event listener para dropdowns de prioridade
+            document.querySelectorAll('.prioridade-dropdown').forEach(function(dropdown) {
+                dropdown.addEventListener('change', function() {
+                    var ordemId = this.getAttribute('data-ordem-id');
+                    var novaPrioridade = this.value;
+                    var currentValue = this.getAttribute('data-current-value');
+                    
+                    if (novaPrioridade !== currentValue) {
+                        atualizarOrdem(ordemId, { prioridade: novaPrioridade }, this);
+                    }
+                });
+            });
+
+            // Carrega indicadores de performance (apenas para administradores)
+            carregarIndicadoresPerformance();
+            
+            // Atualiza indicadores a cada 30 segundos (apenas para administradores)
+            if (document.getElementById('dashboard-container')) {
+                setInterval(carregarIndicadoresPerformance, 30000);
+                configurarToggleDashboard();
+            }
+            
+            // Aguarda um pouco para garantir que a conexão global foi estabelecida
+            setTimeout(configureOrderSignalR, 2000);
+
+            // Busca global em tempo real com debounce
+            const buscaGlobalInput = document.getElementById('buscaGlobal');
+            if (buscaGlobalInput) {
+                let debounceTimer;
+                buscaGlobalInput.addEventListener('input', function() {
+                    clearTimeout(debounceTimer);
+                    const searchTerm = this.value.trim();
+                    
+                    // Se o campo estiver vazio, realiza a busca via AJAX
+                    if (searchTerm.length === 0) {
+                        debounceTimer = setTimeout(() => {
+                            realizarBuscaGlobal('');
+                        }, 500);
+                        return;
+                    }
+                    
+                    // Aguarda 500ms após o usuário parar de digitar
+                    if (searchTerm.length >= 2) {
+                        debounceTimer = setTimeout(() => {
+                            realizarBuscaGlobal(searchTerm);
+                        }, 500);
+                    }
+                });
+            }
+            
+            // Adiciona event listeners para o modal de detalhes
+            const modalDetalhes = document.getElementById('modalDetalhes');
+            if (modalDetalhes) {
+                // Event listener para ANTES do modal fechar (hide.bs.modal)
+                modalDetalhes.addEventListener('hide.bs.modal', function () {
+                    console.log('Modal fechando - preparando restauração'); // Debug: modal fechando
+                    
+                    // Força a posição do scroll ANTES do Bootstrap resetar
+                    document.documentElement.style.scrollBehavior = 'auto';
+                    window.scrollTo(0, savedScrollPosition);
+                });
+                
+                modalDetalhes.addEventListener('hidden.bs.modal', function () {
+                    console.log('Modal fechado - restaurando visibilidade da tabela'); // Debug: modal fechado
+                    
+                    // Remove o efeito de desfoque do conteúdo principal
+                    const mainContent = document.querySelector('main') || document.querySelector('.container-fluid') || document.body;
+                    mainContent.classList.remove('content-blur');
+                    
+                    garantirVisibilidadeTabela();
+                    
+                    // Garante que a posição está correta
+                    window.scrollTo(0, savedScrollPosition);
+                    document.documentElement.style.scrollBehavior = '';
+                    console.log('Posição do scroll restaurada:', savedScrollPosition);
+                });
+                
+                // Event listener adicional para o botão de fechar
+                const btnClose = modalDetalhes.querySelector('.btn-close');
+            if (btnClose) {
+                btnClose.addEventListener('click', function() {
+                    console.log('Botão fechar clicado - preparando restauração da tabela'); // Debug: botão fechar
+                    // Aguarda um pequeno delay para garantir que o modal seja fechado completamente
+                    setTimeout(garantirVisibilidadeTabela, 100);
+                });
+            }
+        }
+
+        // Habilita duplo clique na linha para abrir o modal de detalhes
+        document.querySelectorAll('tr.modern-table-row.row-open-details').forEach(function(row) {
+            row.addEventListener('dblclick', function() {
+                const id = this.getAttribute('data-order-id');
+                if (id) abrirModalDetalhes(id);
+            });
+        });
+
+
+        // Evita que cliques em controles dentro da linha disparem o duplo clique
+        document.querySelectorAll('.status-dropdown, .prioridade-dropdown, .tecnico-dropdown')
+            .forEach(function(ctrl) { ctrl.addEventListener('click', function(e) { e.stopPropagation(); }); });
+        });
+
+        // Função para fazer a chamada AJAX com loading state melhorado
+        function atualizarOrdem(ordemId, dados, elemento) {
+            // Adiciona classe de loading e desabilita o dropdown
+            elemento.disabled = true;
+            elemento.classList.add('loading');
+            
+            // Adiciona spinner visual no dropdown
+            const originalText = elemento.options[elemento.selectedIndex].text;
+            const loadingOption = document.createElement('option');
+            loadingOption.value = elemento.value;
+            loadingOption.text = '⏳ Atualizando...';
+            loadingOption.selected = true;
+            elemento.appendChild(loadingOption);
+            
+            var formData = new FormData();
+            formData.append('id', ordemId);
+            
+            if (dados.status) {
+                formData.append('status', dados.status);
+            }
+            
+            if (dados.tecnicoId !== undefined) {
+                formData.append('tecnicoId', dados.tecnicoId);
+            }
+            
+            if (dados.prioridade) {
+                formData.append('prioridade', dados.prioridade);
+            }
+
+            fetch('@Url.Action("AtualizarStatusTecnico")', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Atualiza o valor atual do dropdown
+                    if (dados.status) {
+                        elemento.setAttribute('data-current-value', dados.status);
+                    }
+                    if (dados.tecnicoId !== undefined) {
+                        elemento.setAttribute('data-current-value', dados.tecnicoId);
+                    }
+                    if (dados.prioridade) {
+                        elemento.setAttribute('data-current-value', dados.prioridade);
+                    }
+                    
+                    // Adiciona efeito de sucesso visual
+                    elemento.classList.add('success-flash');
+                    setTimeout(() => elemento.classList.remove('success-flash'), 1000);
+                    
+                    // Mostra mensagem de sucesso com ícone
+                    mostrarMensagem('✅ Atualizado com sucesso!', 'success');
+                } else {
+                    // Reverte a seleção em caso de erro
+                    elemento.value = elemento.getAttribute('data-current-value');
+                    elemento.classList.add('error-flash');
+                    setTimeout(() => elemento.classList.remove('error-flash'), 1000);
+                    mostrarMensagem('❌ ' + (data.message || 'Erro ao atualizar'), 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                // Reverte a seleção em caso de erro
+                elemento.value = elemento.getAttribute('data-current-value');
+                elemento.classList.add('error-flash');
+                setTimeout(() => elemento.classList.remove('error-flash'), 1000);
+                mostrarMensagem('🔌 Erro de conexão', 'danger');
+            })
+            .finally(() => {
+                // Remove o loading state e reabilita o dropdown
+                elemento.classList.remove('loading');
+                elemento.disabled = false;
+                
+                // Remove a opção de loading
+                if (loadingOption.parentNode) {
+                    loadingOption.remove();
+                }
+            });
+        }
+
+        // Função para mostrar mensagens de feedback com design moderno
+        function mostrarMensagem(mensagem, tipo) {
+            // Cria o container de notificações se não existir
+            let notificationContainer = document.getElementById('notification-container');
+            if (!notificationContainer) {
+                notificationContainer = document.createElement('div');
+                notificationContainer.id = 'notification-container';
+                notificationContainer.className = 'notification-container';
+                document.body.appendChild(notificationContainer);
+            }
+            
+            // Define ícones e cores baseados no tipo
+            const config = {
+                success: { icon: '✅', bgClass: 'notification-success', title: 'Sucesso!' },
+                danger: { icon: '❌', bgClass: 'notification-error', title: 'Erro!' },
+                warning: { icon: '⚠️', bgClass: 'notification-warning', title: 'Atenção!' },
+                info: { icon: 'ℹ️', bgClass: 'notification-info', title: 'Informação' }
+            };
+            
+            const { icon, bgClass, title } = config[tipo] || config.info;
+            
+            // Cria a notificação moderna
+            const notificationId = 'notification-' + Date.now();
+            const notificationDiv = document.createElement('div');
+            notificationDiv.id = notificationId;
+            notificationDiv.className = `modern-notification ${bgClass}`;
+            notificationDiv.innerHTML = `
+                <div class="notification-content">
+                    <div class="notification-icon">${icon}</div>
+                    <div class="notification-text">
+                        <div class="notification-title">${title}</div>
+                        <div class="notification-message">${mensagem}</div>
+                    </div>
+                    <button type="button" class="notification-close" onclick="closeNotification('${notificationId}')">
+                        ×
+                    </button>
+                </div>
+                <div class="notification-progress"></div>
+            `;
+            
+            // Adiciona a notificação ao container
+            notificationContainer.appendChild(notificationDiv);
+            
+            // Anima a entrada
+            setTimeout(() => {
+                notificationDiv.classList.add('show');
+            }, 10);
+            
+            // Remove automaticamente após 4 segundos
+            setTimeout(() => {
+                closeNotification(notificationId);
+            }, 4000);
+        }
+        
+        // Função para fechar notificação
+        function closeNotification(notificationId) {
+            const notification = document.getElementById(notificationId);
+            if (notification) {
+                notification.classList.add('hide');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }
+        }
+
+        // Função para realizar busca global via AJAX sem reload
+        function realizarBuscaGlobal(searchTerm) {
+            // Coleta todos os filtros ativos
+            const params = new URLSearchParams();
+            params.append('busca', searchTerm);
+            
+            const statusFilter = document.getElementById('statusFilter');
+            const prioridadeFilter = document.getElementById('prioridadeFilter');
+            const tecnicoFilter = document.getElementById('tecnicoFilter');
+            const lojaFilter = document.getElementById('lojaFilter');
+            const setorFilter = document.getElementById('setorFilter');
+            const dataInicioFilter = document.getElementById('dataInicioFilter');
+            const dataFimFilter = document.getElementById('dataFimFilter');
+            
+            if (statusFilter && statusFilter.value) params.append('status', statusFilter.value);
+            if (prioridadeFilter && prioridadeFilter.value) params.append('prioridade', prioridadeFilter.value);
+            if (tecnicoFilter && tecnicoFilter.value) params.append('tecnico', tecnicoFilter.value);
+            if (lojaFilter && lojaFilter.value) params.append('loja', lojaFilter.value);
+            if (setorFilter && setorFilter.value) params.append('setor', setorFilter.value);
+            if (dataInicioFilter && dataInicioFilter.value) params.append('dataInicio', dataInicioFilter.value);
+            if (dataFimFilter && dataFimFilter.value) params.append('dataFim', dataFimFilter.value);
+            
+            // Mostra indicador de loading suave
+            const tableContainer = document.querySelector('.modern-table-container');
+            const mobileGrid = document.querySelector('.order-mobile-grid');
+            const targetContainer = tableContainer || mobileGrid;
+            
+            if (targetContainer) {
+                targetContainer.style.opacity = '0.5';
+                targetContainer.style.transition = 'opacity 0.2s';
+            }
+            
+            // Atualiza a URL sem reload
+            const newUrl = '@Url.Action("Index", "OrdemServico")?' + params.toString();
+            history.pushState(null, '', newUrl);
+            
+            // Faz requisição AJAX
+            fetch(newUrl, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                
+                // Extrai o conteúdo atualizado
+                const newTableContainer = tempDiv.querySelector('.modern-table-container');
+                const newMobileGrid = tempDiv.querySelector('.order-mobile-grid');
+                
+                // Atualiza tabela desktop
+                if (tableContainer && newTableContainer) {
+                    tableContainer.innerHTML = newTableContainer.innerHTML;
+                    tableContainer.style.opacity = '1';
+                    
+                    // Re-adiciona event listeners
+                    document.querySelectorAll('tr.modern-table-row.row-open-details').forEach(row => {
+                        row.addEventListener('dblclick', function() {
+                            const id = this.getAttribute('data-order-id');
+                            if (id) abrirModalDetalhes(id);
+                        });
+                    });
+                }
+                
+                // Atualiza grid mobile
+                if (mobileGrid && newMobileGrid) {
+                    mobileGrid.innerHTML = newMobileGrid.innerHTML;
+                    mobileGrid.style.opacity = '1';
+                }
+                
+                // Re-adiciona event listeners dos dropdowns
+                adicionarEventListenersDropdowns();
+            })
+            .catch(error => {
+                console.error('Erro na busca:', error);
+                if (targetContainer) {
+                    targetContainer.style.opacity = '1';
+                }
+            });
+        }
+        
+        // Função auxiliar para re-adicionar event listeners
+        function adicionarEventListenersDropdowns() {
+            document.querySelectorAll('.status-dropdown').forEach(dropdown => {
+                dropdown.addEventListener('change', function() {
+                    const ordemId = this.getAttribute('data-ordem-id');
+                    const novoStatus = this.value;
+                    const currentValue = this.getAttribute('data-current-value');
+                    if (novoStatus !== currentValue) {
+                        if (novoStatus === '3') {
+                            const row = this.closest('tr');
+                            const tecnicoDropdown = row?.querySelector('.tecnico-dropdown');
+                            if (!tecnicoDropdown || !tecnicoDropdown.value) {
+                                alert('Não é possível marcar a ordem como concluída sem atribuir um técnico responsável.');
+                                this.value = currentValue;
+                                return;
+                            }
+                        }
+                        atualizarOrdem(ordemId, { status: novoStatus }, this);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.tecnico-dropdown').forEach(dropdown => {
+                dropdown.addEventListener('change', function() {
+                    const ordemId = this.getAttribute('data-ordem-id');
+                    const novoTecnico = this.value;
+                    const currentValue = this.getAttribute('data-current-value');
+                    if (novoTecnico !== currentValue) {
+                        atualizarOrdem(ordemId, { tecnicoId: novoTecnico }, this);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.prioridade-dropdown').forEach(dropdown => {
+                dropdown.addEventListener('change', function() {
+                    const ordemId = this.getAttribute('data-ordem-id');
+                    const novaPrioridade = this.value;
+                    const currentValue = this.getAttribute('data-current-value');
+                    if (novaPrioridade !== currentValue) {
+                        atualizarOrdem(ordemId, { prioridade: novaPrioridade }, this);
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.status-dropdown, .prioridade-dropdown, .tecnico-dropdown')
+                .forEach(ctrl => ctrl.addEventListener('click', e => e.stopPropagation()));
+        }
+
+        // Função para limpar todos os filtros
+        function clearFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('prioridadeFilter').value = '';
+            document.getElementById('tecnicoFilter').value = '';
+            document.getElementById('lojaFilter').value = '';
+            document.getElementById('setorFilter').value = ''; // Limpa o filtro de setor
+            document.getElementById('dataInicioFilter').value = '';
+            document.getElementById('dataFimFilter').value = '';
+            document.getElementById('buscaGlobal').value = ''; // Limpa a busca global
+            
+            // Submete o formulário para mostrar todos os resultados
+            document.getElementById('filterForm').submit();
+        }
+
+        // Variável global para armazenar a posição do scroll
+        let savedScrollPosition = 0;
+        
+        // Função para abrir modal com detalhes da ordem com loading melhorado
+        async function abrirModalDetalhes(ordemId) {
+            try {
+                // Salva a posição atual do scroll antes de abrir o modal
+                savedScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+                console.log('Posição do scroll salva:', savedScrollPosition);
+                
+                // Mostra o loading state com Skeleton Screen moderno
+                document.getElementById('modalDetalhesContent').innerHTML = `
+                    <div class="modern-loading-container">
+                        <div class="skeleton-modal-header">
+                            <div class="skeleton skeleton-title"></div>
+                            <div class="skeleton skeleton-circle"></div>
+                        </div>
+                        
+                        <div class="skeleton-modal-grid">
+                            <div class="skeleton skeleton-modal-item"></div>
+                            <div class="skeleton skeleton-modal-item"></div>
+                            <div class="skeleton skeleton-modal-item"></div>
+                            <div class="skeleton skeleton-modal-item"></div>
+                        </div>
+
+                        <div class="skeleton skeleton-text" style="width: 100%"></div>
+                        <div class="skeleton skeleton-text" style="width: 90%"></div>
+                        <div class="skeleton skeleton-text" style="width: 40%; height: 30px; border-radius: 99px; margin-top: 1rem;"></div>
+                        
+                        <div class="mt-4 d-flex gap-2">
+                           <div class="skeleton" style="width: 80px; height: 80px; border-radius: 12px;"></div>
+                           <div class="skeleton" style="width: 80px; height: 80px; border-radius: 12px;"></div>
+                           <div class="skeleton" style="width: 80px; height: 80px; border-radius: 12px;"></div>
+                        </div>
+                    </div>
+                `;
+                
+                // Aplica o efeito de desfoque ao conteúdo principal
+                const mainContent = document.querySelector('main') || document.querySelector('.container-fluid') || document.body;
+                mainContent.classList.add('content-blur');
+                
+                // Abre o modal imediatamente com animação
+                const modal = new bootstrap.Modal(document.getElementById('modalDetalhes'));
+                modal.show();
+                
+                // Simula um pequeno delay para melhor UX
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                // Carrega o conteúdo da view parcial
+                const response = await fetch(`/OrdemServico/DetailsModal/${ordemId}`);
+                if (response.ok) {
+                    const html = await response.text();
+                    
+                    // Adiciona animação de fade-in ao carregar o conteúdo
+                    document.getElementById('modalDetalhesContent').style.opacity = '0';
+                    document.getElementById('modalDetalhesContent').innerHTML = html;
+                    
+                    // Anima a entrada do conteúdo
+                    setTimeout(() => {
+                        document.getElementById('modalDetalhesContent').style.transition = 'opacity 0.3s ease-in-out';
+                        document.getElementById('modalDetalhesContent').style.opacity = '1';
+                    }, 50);
+                } else {
+                    document.getElementById('modalDetalhesContent').innerHTML = `
+                        <div class="alert alert-danger text-center modern-error-state">
+                            <div class="error-icon mb-3">⚠️</div>
+                            <h5 class="text-danger mb-2">Ops! Algo deu errado</h5>
+                            <p class="mb-3">Não foi possível carregar os detalhes da ordem.</p>
+                            <button class="btn btn-outline-danger" onclick="abrirModalDetalhes(${ordemId})">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Tentar novamente
+                            </button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                document.getElementById('modalDetalhesContent').innerHTML = `
+                    <div class="alert alert-danger text-center modern-error-state">
+                        <div class="error-icon mb-3">🔌</div>
+                        <h5 class="text-danger mb-2">Erro de Conexão</h5>
+                        <p class="mb-3">Verifique sua conexão com a internet e tente novamente.</p>
+                        <button class="btn btn-outline-danger" onclick="abrirModalDetalhes(${ordemId})">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Tentar novamente
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Função para garantir visibilidade das linhas da tabela após fechar modal
+        function garantirVisibilidadeTabela() {
+            // Força a re-exibição de todas as linhas da tabela
+            const tableRows = document.querySelectorAll('.modern-table tbody tr');
+            tableRows.forEach(row => {
+                // Remove qualquer estilo inline que possa estar ocultando a linha
+                row.style.display = '';
+                row.style.visibility = '';
+                row.style.opacity = '';
+                
+                // Garante que a linha seja visível
+                row.classList.remove('d-none', 'hidden');
+                
+                // Força um reflow para garantir que as mudanças sejam aplicadas
+                row.offsetHeight;
+            });
+            
+            // Força um reflow da tabela inteira
+            const table = document.querySelector('.modern-table');
+            if (table) {
+                table.style.display = 'none';
+                table.offsetHeight; // Força reflow
+                table.style.display = '';
+            }
+            
+            console.log('Visibilidade da tabela restaurada'); // Debug: confirmação da correção
+        }
+
+        // Função duplicada removida - agora usando configureOrderSignalR() que utiliza a conexão global
+
+        // Função para exibir notificações toast (usando sistema moderno)
+        function showToast(message, type = 'info') {
+            // Mapeia os tipos do toast para os tipos da notificação moderna
+            const typeMap = {
+                'success': 'success',
+                'error': 'danger',
+                'warning': 'warning',
+                'info': 'info'
+            };
+            
+            // Usa a função de notificação moderna
+            mostrarMensagem(message, typeMap[type] || 'info');
+        }
+
+        // Função para criar o container de toasts se não existir
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            container.style.zIndex = '1055';
+            document.body.appendChild(container);
+            return container;
+        }
+
+        // Função para atualizar uma linha da tabela com novos dados
+        function updateOrderRowInTable(orderData) {
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                // Procura por elementos que contenham o ID da ordem
+                const statusDropdown = row.querySelector(`[data-ordem-id="${orderData.id}"]`);
+                const tecnicoDropdown = row.querySelector(`[data-ordem-id="${orderData.id}"].tecnico-dropdown`);
+                
+                if (statusDropdown) {
+                    // Atualiza o dropdown de status
+                    const statusSelect = row.querySelector('.status-dropdown');
+                    if (statusSelect) {
+                        // Mapeia o status para o valor numérico
+                        const statusMap = {
+                            'Aberta': '1',
+                            'EmAndamento': '2', 
+                            'Concluida': '3'
+                        };
+                        
+                        const statusValue = statusMap[orderData.status] || '1';
+                        statusSelect.value = statusValue;
+                        
+                        // Atualiza as cores do dropdown baseado no novo status
+                        statusSelect.style.backgroundColor = 
+                            orderData.status === 'Aberta' ? '#fff3cd' :
+                            orderData.status === 'EmAndamento' ? '#d1ecf1' : '#d4edda';
+                        statusSelect.style.borderColor = 
+                            orderData.status === 'Aberta' ? '#ffeaa7' :
+                            orderData.status === 'EmAndamento' ? '#74c0fc' : '#c3e6cb';
+                        statusSelect.style.color = 
+                            orderData.status === 'Aberta' ? '#856404' :
+                            orderData.status === 'EmAndamento' ? '#0c5460' : '#155724';
+                    }
+                    
+                    // Atualiza o dropdown de técnico se fornecido
+                    if (tecnicoDropdown && orderData.tecnicoId !== undefined) {
+                        tecnicoDropdown.value = orderData.tecnicoId || '';
+                    }
+                    
+                    // Atualiza o dropdown de prioridade se fornecido
+                    const prioridadeDropdown = row.querySelector('.prioridade-dropdown');
+                    if (prioridadeDropdown && orderData.prioridade !== undefined) {
+                        // Mapeia a prioridade para o valor numérico
+                        const prioridadeMap = {
+                            'Baixa': '1',
+                            'Media': '2',
+                            'Alta': '3'
+                        };
+                        
+                        const prioridadeValue = prioridadeMap[orderData.prioridade] || '2';
+                        prioridadeDropdown.value = prioridadeValue;
+                        
+                        // Atualiza as cores do dropdown baseado na nova prioridade
+                        prioridadeDropdown.style.backgroundColor = 
+                            orderData.prioridade === 'Alta' ? '#f8d7da' :
+                            orderData.prioridade === 'Media' ? '#fff3cd' : '#d1ecf1';
+                        prioridadeDropdown.style.borderColor = 
+                            orderData.prioridade === 'Alta' ? '#f5c6cb' :
+                            orderData.prioridade === 'Media' ? '#ffeaa7' : '#bee5eb';
+                        prioridadeDropdown.style.color = 
+                            orderData.prioridade === 'Alta' ? '#721c24' :
+                            orderData.prioridade === 'Media' ? '#856404' : '#0c5460';
+                        
+                        // Atualiza a classe CSS da linha da tabela baseada na nova prioridade
+                        // Remove todas as classes de prioridade existentes
+                        row.classList.remove('ordem-alta-prioridade');
+                        
+                        // Adiciona a classe de alta prioridade se necessário (apenas se não estiver concluída)
+                        if (orderData.prioridade === 'Alta' && orderData.status !== 'Concluida') {
+                            row.classList.add('ordem-alta-prioridade');
+                            console.log('Classe ordem-alta-prioridade aplicada à linha da ordem ID:', orderData.id); // Debug: classe aplicada
+                        } else {
+                            console.log('Classe ordem-alta-prioridade removida da linha da ordem ID:', orderData.id); // Debug: classe removida
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+}
+
+<!-- Inclui a biblioteca SignalR -->
+<script>
+    // Função para carregar indicadores de performance (apenas para administradores)
+    function carregarIndicadoresPerformance() {
+        // Verifica se o usuário é administrador e se o dashboard existe
+        const dashboardContainer = document.getElementById('dashboard-container');
+        if (!dashboardContainer) {
+            return; // Não é administrador, não carrega indicadores
+        }
+
+        // Faz requisição para obter estatísticas
+        fetch('/OrdemServico/GetEstatisticas')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar estatísticas');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Atualiza o total de ordens abertas
+                document.getElementById('total-ordens-abertas').textContent = data.totalOrdensAbertas || 0;
+                
+                // Atualiza ordens concluídas
+                document.getElementById('ordens-concluidas').textContent = data.ordensConcluidas || 0;
+                
+                // Atualiza contadores por status
+                let statusAberta = 0;
+                let statusEmAndamento = 0;
+                
+                if (data.ordensPorStatus) {
+                    data.ordensPorStatus.forEach(item => {
+                        if (item.status === 'Aberta') {
+                            statusAberta = item.quantidade;
+                        } else if (item.status === 'EmAndamento') {
+                            statusEmAndamento = item.quantidade;
+                        }
+                    });
+                }
+                
+                document.getElementById('status-aberta').textContent = statusAberta;
+                document.getElementById('status-em-andamento').textContent = statusEmAndamento;
+                
+                // Atualiza contador de prioridade alta
+                let prioridadeAlta = 0;
+                
+                if (data.ordensPorPrioridade) {
+                    data.ordensPorPrioridade.forEach(item => {
+                        if (item.prioridade === 'Alta') {
+                            prioridadeAlta = item.quantidade;
+                        }
+                    });
+                }
+                
+                document.getElementById('prioridade-alta').textContent = prioridadeAlta;
+                
+                // Timestamp da última atualização removido
+                
+                console.log('Indicadores de performance atualizados com sucesso');
+            })
+            .catch(error => {
+                console.error('Erro ao carregar indicadores de performance:', error);
+                
+                // Em caso de erro, exibe valores padrão
+                const elementos = [
+                    'total-ordens-abertas', 'ordens-concluidas', 'status-aberta', 
+                    'status-em-andamento', 'prioridade-alta'
+                ];
+                
+                elementos.forEach(id => {
+                    const elemento = document.getElementById(id);
+                    if (elemento) {
+                        elemento.textContent = 'Erro';
+                    }
+                });
+                
+                // Timestamp da última atualização removido
+            });
+    }
+
+    // Função para configurar o toggle do dashboard
+    function configurarToggleDashboard() {
+        const toggleButton = document.getElementById('dashboardMetricsToggle');
+        const metrics = document.getElementById('dashboardMetrics');
+        if (!toggleButton || !metrics) {
+            return;
+        }
+
+        toggleButton.addEventListener('click', () => {
+            const isExpanded = metrics.classList.toggle('is-expanded');
+            toggleButton.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+
+            const label = toggleButton.querySelector('.toggle-text');
+            if (label) {
+                label.textContent = isExpanded ? 'Ocultar indicadores' : 'Ver indicadores';
+            }
+
+            const icon = toggleButton.querySelector('.toggle-icon');
+            if (icon) {
+                icon.classList.toggle('is-rotated', isExpanded);
+            }
+        });
+    }
+
+    // Função para configurar SignalR para notificações de ordens usando conexão global
+    function configureOrderSignalR() {
+        console.log('Configurando SignalR para notificações de ordens...'); // Debug: configuração
+        
+        // Verifica se a conexão global existe
+        if (typeof globalConnection !== 'undefined' && globalConnection) {
+            console.log('Usando conexão SignalR global para notificações de ordens'); // Debug: conexão global
+            
+            // Escuta notificações de novas ordens criadas
+            globalConnection.on("NewOrderCreated", function (orderData) {
+                console.log('Nova ordem criada recebida via SignalR:', orderData); // Debug: nova ordem
+                // Exibe notificação toast para nova ordem
+                showToast(`Nova ordem criada: ${orderData.titulo} (${orderData.prioridade})`, 'success');
+                
+                // Atualiza indicadores de performance em tempo real (apenas para administradores)
+                if (document.getElementById('dashboard-container')) {
+                    carregarIndicadoresPerformance();
+                }
+            });
+
+            // Escuta atualizações de status de ordens
+            globalConnection.on("OrderStatusUpdated", function (orderData) {
+                console.log('Status de ordem atualizado via SignalR:', orderData); // Debug: status atualizado
+                
+                // Determina qual campo foi alterado para exibir mensagem apropriada
+                let mensagem = `Ordem ${orderData.id} atualizada`;
+                
+                // Usa as informações específicas do campo alterado enviadas pelo servidor
+                if (orderData.campoAlterado && orderData.valorAlterado) {
+                    switch (orderData.campoAlterado) {
+                        case 'status':
+                            mensagem = `Ordem ${orderData.id} - status alterado para: ${orderData.valorAlterado}`;
+                            break;
+                        case 'prioridade':
+                            mensagem = `Ordem ${orderData.id} - prioridade alterada para: ${orderData.valorAlterado}`;
+                            break;
+                        case 'tecnico':
+                            const tecnicoNome = orderData.valorAlterado === 'Nenhum' ? 'Nenhum técnico' : orderData.valorAlterado;
+                            mensagem = `Ordem ${orderData.id} - técnico alterado para: ${tecnicoNome}`;
+                            break;
+                        default:
+                            mensagem = `Ordem ${orderData.id} atualizada`;
+                    }
+                } else {
+                    // Fallback para compatibilidade
+                    mensagem = `Ordem ${orderData.id} atualizada: ${orderData.status}`;
+                }
+                
+                // Exibe notificação toast
+                showToast(mensagem, 'info');
+                
+                // Atualiza a linha da tabela com os novos dados
+                updateOrderRowInTable(orderData);
+                
+                // Atualiza indicadores de performance em tempo real (apenas para administradores)
+                if (document.getElementById('dashboard-container')) {
+                    carregarIndicadoresPerformance();
+                }
+            });
+        } else {
+            console.warn('Conexão SignalR global não encontrada para notificações de ordens'); // Debug: conexão não encontrada
+            // Tenta novamente após um pequeno delay
+            setTimeout(configureOrderSignalR, 1000);
+        }
+    }
+
+    // Função movida para o listener consolidado
+    
+
+</script>
+
+<!-- Modal para exibir detalhes da ordem -->
+<div class="modal fade" id="modalDetalhes" tabindex="-1" aria-labelledby="modalDetalhesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+            <div class="modal-header border-bottom-0 pb-0 pt-3 px-4">
+                <h5 class="modal-title" id="modalDetalhesLabel">
+                    <i class="bi bi-eye me-2"></i>
+                    Detalhes da Ordem de Serviço
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body p-0" id="modalDetalhesContent">
+                <!-- Conteúdo será carregado dinamicamente -->
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Checklist Logic
+    function toggleAllOrdens(source) {
+        const checkboxes = document.querySelectorAll('.ordem-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = source.checked;
+        });
+        atualizarContadorChecklist();
+    }
+
+    function atualizarContadorChecklist(event) {
+        if (event) event.stopPropagation();
+        
+        const selectedCount = document.querySelectorAll('.ordem-checkbox:checked').length;
+        const btn = document.getElementById('btnGerarChecklist');
+        const badge = document.getElementById('badgeChecklistCount');
+        
+        if (btn && badge) {
+            badge.textContent = selectedCount;
+            if (selectedCount > 0) {
+                btn.removeAttribute('disabled');
+                badge.style.display = 'inline-block';
+            } else {
+                btn.setAttribute('disabled', 'disabled');
+                badge.style.display = 'none';
+            }
+        }
+        
+        // Update "Select All" checkbox state
+        const allCheckboxes = document.querySelectorAll('.ordem-checkbox');
+        const checkAll = document.getElementById('checkAllOrdens');
+        if (checkAll && allCheckboxes.length > 0) {
+            checkAll.checked = selectedCount === allCheckboxes.length;
+            checkAll.indeterminate = selectedCount > 0 && selectedCount < allCheckboxes.length;
+        }
+    }
+
+    function gerarChecklist() {
+        const selectedIds = Array.from(document.querySelectorAll('.ordem-checkbox:checked')).map(cb => parseInt(cb.value));
+        
+        if (selectedIds.length === 0) {
+            alert('Selecione pelo menos uma ordem para gerar o checklist.');
+            return;
+        }
+
+        const btn = document.getElementById('btnGerarChecklist');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Gerando...';
+        btn.disabled = true;
+
+        fetch('/Relatorio/GerarChecklist', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+            },
+            body: JSON.stringify(selectedIds)
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Erro na geração do arquivo');
+            return response.blob();
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `Checklist_Execucao_${new Date().toISOString().slice(0,10)}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            // Show success toast
+            // Reset button state
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Ocorreu um erro ao gerar o checklist. Tente novamente.');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }
+</script>

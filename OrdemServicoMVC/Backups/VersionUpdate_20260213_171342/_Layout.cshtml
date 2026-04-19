@@ -1,0 +1,1012 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="application-name" content="COS - Controle de Ordens de Serviço" />
+    <meta name="description" content="Controle de ordens de serviço, mensagens e relatórios do Quartetto com modo aplicativo PWA." />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="COS" />
+    <title>@ViewData["Title"] - Sistema de Ordem de ServiÃ§o</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/stylecss/custom.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/stylecss/ordem-info-styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/OrdemServicoMVC.styles.css" asp-append-version="true" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- MODERN SOFT DESIGN SYSTEM (Formerly Brutalist) -->
+    <link rel="stylesheet" href="~/stylecss/brutalist-design-system.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/stylecss/brutalist-overrides.css" asp-append-version="true" />
+    <link rel="manifest" href="~/manifest.webmanifest" />
+    <link rel="apple-touch-icon" sizes="192x192" href="~/images/pwa-icon-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="~/images/pwa-icon-512.png" />
+    
+    <!-- Favicon - ReferÃªncia explÃ­cita para garantir atualizaÃ§Ã£o -->
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" asp-append-version="true" />
+    
+    <!-- Estilos para o toggle do filtro -->
+    <style>
+        /* BotÃ£o toggle do filtro - Cor sÃ³lida igual ao botÃ£o de configuraÃ§Ãµes */
+        .filter-toggle-btn {
+            background: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .filter-toggle-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .filter-toggle-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* Ãcone do toggle com animaÃ§Ã£o */
+        .filter-toggle-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .filter-toggle-btn[aria-expanded="true"] .filter-toggle-icon {
+            transform: rotate(180deg);
+        }
+        
+        /* Container do filtro com animaÃ§Ã£o */
+        .filter-container {
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+        
+        .filter-container.collapsed {
+            max-height: 0;
+            opacity: 0;
+            margin-bottom: 0 !important;
+        }
+        
+        .filter-container:not(.collapsed) {
+            max-height: 1000px;
+            opacity: 1;
+        }
+        
+        /* Header do filtro com toggle */
+        .filter-header-with-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .filter-title {
+            margin: 0;
+            color: #333;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        /* Responsividade para filtros */
+        @@media (max-width: 768px) {
+            .filter-header-with-toggle {
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+            }
+            
+            .filter-title {
+                font-size: 16px;
+                justify-content: center;
+            }
+            
+            .filter-subtitle {
+                display: none;
+            }
+            
+            .filter-toggle-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 10px 16px;
+            }
+        }
+        
+        @@media (max-width: 576px) {
+            .filter-title {
+                font-size: 14px;
+            }
+            
+            .filter-title-text {
+                font-size: 14px;
+            }
+            
+            .filter-toggle-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+            
+            .toggle-text {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body class="has-mobile-safe-area">
+    <div id="connectionStatusBanner" class="connection-banner" role="status" aria-live="polite" aria-hidden="true">
+        <i class="bi bi-wifi-off me-2"></i>Sem conexão. Tentando reconectar...
+    </div>
+    <div id="pwaToastContainer" class="pwa-toast-container" aria-live="polite" aria-atomic="true"></div>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <!-- Header Moderno -->
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <!-- Logo com efeito hover -->
+                <a href="/" class="navbar-brand">
+                    <img src="~/images/quartetto-logo.png" alt="Quartetto Supermercados" class="logo">
+                </a>
+                
+                <!-- InformaÃ§Ãµes do usuÃ¡rio e aÃ§Ãµes -->
+                <div class="navbar-nav ms-auto d-flex flex-row align-items-center">
+                    <span class="user-info">
+                        <i class="bi bi-person me-1"></i>
+                        <!-- Alterado de "Loja" para "Usuário" para melhor identificação -->
+                        Usuário: <strong>@User.Identity.Name</strong>
+                    </span>
+                    <button type="button"
+                            class="btn btn-install-pwa btn-mobile-action d-none ms-3"
+                            id="pwaInstallButton"
+                            aria-live="polite"
+                            aria-hidden="true">
+                        <i class="bi bi-download"></i>
+                        <span class="btn-text">Instalar App</span>
+                    </button>
+                    
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <!-- Botão de configurações para administradores -->
+                        <div class="dropdown d-none d-lg-block">
+                            <button class="btn btn-config btn-mobile-action dropdown-toggle" type="button" id="configDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-gear"></i>
+                                <span class="btn-text">Config</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="configDropdown">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="User" asp-action="Index">
+                                        <i class="bi bi-people me-2"></i>
+                                        Usuários
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Tecnico" asp-action="Index">
+                                        <i class="bi bi-tools me-2"></i>
+                                        Técnicos
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Relatorio" asp-action="Graficos">
+                                        <i class="bi bi-graph-up me-2"></i>
+                                        Gráficos e Análises
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Relatorio" asp-action="Index">
+                                        <i class="bi bi-file-earmark-bar-graph me-2"></i>
+                                        Gerar Relatório
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item danger" href="#" onclick="confirmarLimpezaCompleta()" title="Limpar todas as ordens de serviço">
+                                        <i class="bi bi-trash3 me-2"></i>
+                                        Limpar Tudo
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline w-100">
+                                        <button type="submit" class="dropdown-item danger">
+                                            <i class="bi bi-box-arrow-right me-2"></i>
+                                            Sair
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Container para manter botões lado a lado (apenas desktop) -->
+                        <div class="d-none d-lg-flex flex-row align-items-center gap-2">
+                            <!-- Botão Nova Ordem de Serviço para usuários não-admin -->
+                            <a asp-controller="OrdemServico" asp-action="Create" class="btn btn-primary btn-mobile-action">
+                                <i class="bi bi-plus-circle"></i>
+                                <span class="btn-text">Nova OS</span>
+                            </a>
+                            
+                            <!-- Botão sair para usuários não-administradores -->
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                                <button type="submit" class="btn btn-logout btn-mobile-action">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                    <span class="btn-text">Sair</span>
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main content area -->
+        <div style="background-color: var(--light-color); display: flex; flex-direction: column;">
+            <div class="container-fluid py-4">
+                @RenderBody()
+            </div>
+        </div>
+        
+        <!-- Floating Action Button para Chat -->
+        <a href="@Url.Action("Painel", "Mensagem")" class="fab-chat" title="Painel de Mensagens">
+            <i class="bi bi-chat-dots"></i>
+            <span class="fab-badge" id="fabUnreadBadge" style="display: none;">0</span>
+        </a>
+
+        <!-- Painel do FAB para listar ordens com novas mensagens -->
+        <div class="fab-panel" id="fabChatPanel">
+            <div class="fab-panel-header">
+                <div>
+                    <h6 class="fab-panel-title">Novas mensagens</h6>
+                    <small class="text-muted" id="fabPanelSubtitle">Carregando...</small>
+                </div>
+                <button type="button" class="fab-panel-close" id="fabClosePanel" aria-label="Fechar">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <div class="fab-panel-body">
+                <div id="fabChatList" class="fab-chat-list"></div>
+                <div id="fabEmptyState" class="fab-empty-state" style="display: none;">
+                    <i class="bi bi-chat-dots"></i>
+                    <p>Você está em dia! Sem mensagens novas.</p>
+                </div>
+                <a href="@Url.Action("Painel", "Mensagem")" class="fab-panel-link">Ir para o painel de mensagens</a>
+            </div>
+        </div>
+
+        <!-- Barra de navegação mobile -->
+        <nav class="mobile-bottom-nav d-lg-none" aria-label="Menu principal móvel">
+            <form asp-controller="Account" asp-action="Logout" method="post" class="mobile-nav-item mobile-nav-item--logout" data-nav-route="/account/logout">
+                <button type="submit" class="mobile-nav-item__button">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span class="mobile-nav-label">Sair</span>
+                </button>
+            </form>
+            <a href="@Url.Action("Index", "OrdemServico")"
+               class="mobile-nav-item"
+               data-nav-route="/ordemservico/index">
+                <i class="bi bi-list-check"></i>
+                <span class="mobile-nav-label">Ordens</span>
+            </a>
+            @if (!User.IsInRole("Admin"))
+            {
+                <a href="@Url.Action("Create", "OrdemServico")"
+                   class="mobile-nav-item mobile-nav-item--primary"
+                   data-nav-route="/ordemservico/create">
+                    <div class="mobile-nav-fab">
+                        <i class="bi bi-plus"></i>
+                    </div>
+                    <span class="mobile-nav-label">Nova</span>
+                </a>
+            }
+            <a href="@Url.Action("Painel", "Mensagem")"
+               class="mobile-nav-item"
+               data-nav-route="/mensagem">
+                <i class="bi bi-chat-dots"></i>
+                <span class="mobile-nav-label">Mensagens</span>
+                <span class="mobile-nav-badge" id="mobileUnreadBadge" aria-label="Mensagens não lidas">0</span>
+            </a>
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="dropup mobile-nav-config">
+                    <button type="button"
+                            class="mobile-nav-item mobile-nav-config__toggle"
+                            id="mobileConfigDropdown"
+                            data-bs-toggle="dropdown"
+                            data-bs-display="static"
+                            aria-expanded="false">
+                        <i class="bi bi-gear"></i>
+                        <span class="mobile-nav-label">Config</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end mobile-nav-config__menu" aria-labelledby="mobileConfigDropdown">
+                        <li>
+                            <a class="dropdown-item" asp-controller="User" asp-action="Index">
+                                <i class="bi bi-people me-2"></i>Usuários
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" asp-controller="Tecnico" asp-action="Index">
+                                <i class="bi bi-tools me-2"></i>Técnicos
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" asp-controller="Relatorio" asp-action="Index">
+                                <i class="bi bi-graph-up me-2"></i>Relatórios
+                            </a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="#" onclick="confirmarLimpezaCompleta()">
+                                <i class="bi bi-trash3 me-2"></i>Limpar Tudo
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            }
+            <a asp-controller="Account" asp-action="Profile"
+               class="mobile-nav-item"
+               data-nav-route="/account/profile">
+                <i class="bi bi-person-circle"></i>
+                <span class="mobile-nav-label">Perfil</span>
+            </a>
+        </nav>
+        <div class="mobile-bottom-nav-space d-lg-none"></div>
+
+        <!-- Footer com Glassmorphism (desktop apenas) -->
+        <footer class="footer-glassmorphism d-none d-lg-block">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-center align-items-center gap-4 flex-wrap">
+                    <!-- Informações da Empresa -->
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-gear-fill text-primary"></i>
+                        <span class="footer-text"><strong>COS</strong> - Controle de Ordem e Servico</span>
+                    </div>
+                    
+                    <!-- Separador -->
+                    <span class="footer-separator">|</span>
+                    
+                    <!-- Versão -->
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-code-slash text-primary"></i>
+                        <span class="footer-text">v@(ViewBag.AppVersion ?? "2.3.2")</span>
+                    </div>
+                    
+                    <!-- Separador -->
+                    <span class="footer-separator">|</span>
+                    
+                    <!-- Status -->
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-circle-fill text-success pulse-animation" style="font-size: 0.5rem;"></i>
+                        <span class="footer-text">Sistema Online</span>
+                    </div>
+                    
+                    <!-- Separador -->
+                    <span class="footer-separator">|</span>
+                    
+                    <!-- Copyright -->
+                    <div class="footer-text">
+                        <small>&copy; @DateTime.Now.Year COS. Todos os direitos reservados.</small>
+                    </div>
+                </div>
+                <button type="button" class="footer-scroll-top" id="scrollToTopButton" aria-label="Voltar ao topo">
+                    <i class="bi bi-arrow-up-short"></i>
+                </button>
+            </div>
+        </footer>
+    }
+    else
+    {
+        @RenderBody()
+    }
+    <!-- Scripts essenciais carregados imediatamente -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    
+    <!-- Sistema de Lazy Loading -->
+    <script src="~/js/lazy-loader.js" asp-append-version="true"></script>
+    
+    <!-- Carregadores de componentes específicos -->
+     <script src="~/js/components/validation-loader.js" asp-append-version="true"></script>
+     <script src="~/js/components/bootstrap-loader.js" asp-append-version="true"></script>
+     <script src="~/js/components/reports-loader.js" asp-append-version="true"></script>
+     <script src="~/js/components/image-lazy-loader.js" asp-append-version="true"></script>
+    
+    <!-- Bootstrap carregado sob demanda -->
+     <script>
+         // Aguarda o DOM estar pronto e os carregadores estarem disponíveis
+         document.addEventListener('DOMContentLoaded', function() {
+             // Pequeno delay para garantir que todos os scripts foram carregados
+             setTimeout(() => {
+                 // Verifica se o lazyLoader está disponível
+                 if (typeof lazyLoader !== 'undefined') {
+                     // Carrega Bootstrap de forma assíncrona
+                     lazyLoader.loadScript('/lib/bootstrap/dist/js/bootstrap.bundle.min.js', 'bootstrap-bundle')
+                         .then(() => {
+                             console.log('✅ Bootstrap carregado via lazy loading');
+                             
+                             // Aguarda um pouco mais para garantir que o bootstrapLoader foi inicializado
+                             setTimeout(() => {
+                                 // Inicializa componentes Bootstrap automaticamente
+                                 if (typeof bootstrapLoader !== 'undefined' && bootstrapLoader.autoLoadComponents) {
+                                     bootstrapLoader.autoLoadComponents();
+                                 } else {
+                                     console.warn('⚠️ BootstrapLoader não está disponível ainda');
+                                 }
+                             }, 100);
+                         }).catch(error => {
+                             console.error('❌ Erro ao carregar Bootstrap:', error);
+                         });
+                 } else {
+                     console.error('❌ LazyLoader não está disponível');
+                 }
+             }, 100);
+         });
+     </script>
+    
+    <!-- Scripts principais -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/pwa.js" asp-append-version="true"></script>
+    
+    <!-- BRUTALIST ANIMATIONS SYSTEM -->
+    <script src="~/js/brutalist-animations.js" asp-append-version="true"></script>
+    
+    <!-- Tratamento global de erros para suprimir erros de extensÃµes do Chrome -->
+    <script>
+        // Suprime erros específicos de extensões do Chrome que não afetam a funcionalidade
+        window.addEventListener('error', function(event) {
+            // Verifica se é o erro específico das extensões do Chrome
+            if (event.message && event.message.includes('A listener indicated an asynchronous response by returning true')) {
+                // Suprime este erro especÃ­fico pois Ã© causado por extensÃµes do navegador
+                event.preventDefault();
+                return true;
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const scrollBtn = document.getElementById('scrollToTopButton');
+            if (!scrollBtn) {
+                return;
+            }
+
+            const toggleScrollTopVisibility = () => {
+                if (window.scrollY > 400) {
+                    scrollBtn.classList.add('visible');
+                } else {
+                    scrollBtn.classList.remove('visible');
+                }
+            };
+
+            scrollBtn.addEventListener('click', function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            window.addEventListener('scroll', toggleScrollTopVisibility);
+            toggleScrollTopVisibility();
+        });
+    </script>
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        <!-- SignalR carregado sob demanda via LazyLoader -->
+        <script>
+            // Variável global para conexão SignalR (compatibilidade)
+            let globalConnection = null;
+            
+            // Função para inicializar SignalR sob demanda
+            async function initializeSignalR() {
+                try {
+                    console.log('🚀 Inicializando SignalR sob demanda...');
+                    
+                    // Carrega o gerenciador SignalR
+                    await window.lazyLoader.loadScript('/js/components/signalr-manager.js', 'signalr-manager');
+                    
+                    // Obtém a conexão global
+                    globalConnection = await window.signalRManager.getGlobalConnection();
+                    
+                    // Configura listeners para notificações globais
+                    setupGlobalSignalRListeners();
+                    
+                    // Carrega contador inicial de mensagens não lidas
+                    loadUnreadMessagesCount();
+                    
+                    console.log('✅ SignalR inicializado com sucesso!');
+                    
+                } catch (error) {
+                    console.error('❌ Erro ao inicializar SignalR:', error);
+                    // Retry após 5 segundos
+                    setTimeout(initializeSignalR, 5000);
+                }
+            }
+
+            // ---------- FAB CHAT PANEL ----------
+            let fabPanelLoaded = false;
+            let fabPanelLoading = false;
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const fabButton = document.querySelector('.fab-chat');
+                const fabPanel = document.getElementById('fabChatPanel');
+                const fabClose = document.getElementById('fabClosePanel');
+
+                if (!fabButton || !fabPanel) return;
+
+                fabButton.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    toggleFabPanel();
+                });
+
+                if (fabClose) {
+                    fabClose.addEventListener('click', function () {
+                        hideFabPanel();
+                    });
+                }
+
+                document.addEventListener('click', function (event) {
+                    if (!fabPanel.classList.contains('visible')) return;
+                    if (event.target.closest('.fab-panel') || event.target.closest('.fab-chat')) return;
+                    hideFabPanel();
+                });
+            });
+
+            function toggleFabPanel() {
+                const panel = document.getElementById('fabChatPanel');
+                if (!panel) return;
+
+            	if (panel.classList.contains('visible')) {
+                    hideFabPanel();
+                } else {
+                    panel.classList.add('visible');
+                    if (!fabPanelLoaded) {
+                        loadFabChatPanel();
+                    }
+                }
+            }
+
+            function hideFabPanel() {
+                const panel = document.getElementById('fabChatPanel');
+                if (panel) {
+                    panel.classList.remove('visible');
+                }
+            }
+
+            async function loadFabChatPanel() {
+                if (fabPanelLoading) return;
+                fabPanelLoading = true;
+
+                const listContainer = document.getElementById('fabChatList');
+                const emptyState = document.getElementById('fabEmptyState');
+                const subtitle = document.getElementById('fabPanelSubtitle');
+
+                if (subtitle) subtitle.textContent = 'Carregando ordens...';
+                if (listContainer) listContainer.innerHTML = '';
+                if (emptyState) emptyState.style.display = 'none';
+
+                try {
+                    const response = await fetch('/Mensagem/OrdensNaoLidas');
+                    if (!response.ok) throw new Error('Erro ao buscar ordens');
+
+                    const data = await response.json();
+                    const ordens = data?.ordens || [];
+
+                    if (ordens.length === 0) {
+                        if (emptyState) emptyState.style.display = 'block';
+                        if (subtitle) subtitle.textContent = 'Sem novas mensagens';
+                    } else {
+                        renderFabChatList(ordens);
+                        if (subtitle) subtitle.textContent = `${ordens.length} ordem(ns) com novidades`;
+                    }
+
+                    fabPanelLoaded = true;
+                } catch (error) {
+                    console.error('Erro ao carregar ordens não lidas:', error);
+                    if (subtitle) subtitle.textContent = 'Não foi possível carregar';
+                } finally {
+                    fabPanelLoading = false;
+                }
+            }
+
+            function renderFabChatList(ordens) {
+                const listContainer = document.getElementById('fabChatList');
+                const emptyState = document.getElementById('fabEmptyState');
+
+                if (!listContainer) return;
+                listContainer.innerHTML = '';
+
+                ordens.forEach(ordem => {
+                    const link = document.createElement('a');
+                    link.href = `/Mensagem/Chat/${ordem.id}`;
+                    link.className = 'fab-chat-item';
+                    link.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <h6>${ordem.titulo || 'Sem título'}</h6>
+                            <span class="fab-chat-unread">${ordem.unread}</span>
+                        </div>
+                        <div class="fab-chat-meta">
+                            <span><i class="bi bi-shop me-1"></i>${ordem.loja || 'Loja não informada'}</span>
+                            <span><i class="bi bi-person-gear me-1"></i>${ordem.tecnico || 'Não atribuído'}</span>
+                        </div>
+                    `;
+                    listContainer.appendChild(link);
+                });
+
+                if (emptyState) emptyState.style.display = ordens.length === 0 ? 'block' : 'none';
+            }
+            
+            // Configura listeners globais do SignalR
+            function setupGlobalSignalRListeners() {
+                if (!globalConnection) return;
+                
+                // Escuta atualizações do contador de mensagens não lidas
+                globalConnection.on("UnreadMessagesCount", function (data) {
+                    updateUnreadBadge(data.count);
+                });
+                
+                // Escuta atualizações do contador global de mensagens não lidas
+                globalConnection.on("GlobalUnreadMessagesCount", function (data) {
+                    updateUnreadBadge(data.count);
+                });
+                
+                // Listener para notificações de sistema
+                globalConnection.on('NotificacaoSistema', function(notification) {
+                    console.log('🔔 Notificação do sistema:', notification);
+                    
+                    // Exibe notificação (pode ser implementado com toast)
+                    if (notification.message) {
+                        // Implementar sistema de toast aqui
+                        console.log('Notificação:', notification.message);
+                    }
+                });
+                
+                console.log('👂 Listeners globais do SignalR configurados');
+            }
+            
+            // FunÃ§Ã£o para carregar o contador inicial de mensagens nÃ£o lidas
+            async function loadUnreadMessagesCount() {
+                try {
+                    const response = await fetch('/Mensagem/ContarNaoLidas');
+                    if (response.ok) {
+                        const data = await response.json();
+                        updateUnreadBadge(data.count || 0);
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar contador de mensagens:', error);
+                }
+            }
+            
+            // FunÃ§Ã£o para atualizar o badge de mensagens nÃ£o lidas
+            function updateUnreadBadge(count) {
+                const badge = document.getElementById('unread-badge');
+                const fabBadge = document.getElementById('fabUnreadBadge');
+                
+                if (badge) {
+                    if (count > 0) {
+                        badge.textContent = count > 99 ? '99+' : count;
+                        badge.style.display = 'inline';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+                
+                // Atualiza também o badge do FAB
+                if (fabBadge) {
+                    if (count > 0) {
+                        fabBadge.textContent = count > 99 ? '99+' : count;
+                        fabBadge.style.display = 'flex';
+                    } else {
+                        fabBadge.style.display = 'none';
+                    }
+                }
+            }
+            
+            // FunÃ§Ã£o para abrir o modal de confirmaÃ§Ã£o de limpeza completa
+            function confirmarLimpezaCompleta() {
+                // Reseta o checkbox, campo de senha e desabilita o botÃ£o
+                document.getElementById('confirmarLimpeza').checked = false;
+                if (document.getElementById('senhaLimpeza')) {
+                    document.getElementById('senhaLimpeza').value = '';
+                }
+                document.getElementById('btnConfirmarLimpeza').disabled = true;
+                
+                // Exibe o modal
+                new bootstrap.Modal(document.getElementById('modalLimpezaCompleta')).show();
+            }
+            
+            // FunÃ§Ã£o para executar a limpeza completa
+            function executarLimpezaCompleta() {
+                // Valida a senha
+                const senha = document.getElementById('senhaLimpeza').value;
+                if (!senha) {
+                    alert('Por favor, digite a senha de administrador para confirmar.');
+                    return;
+                }
+
+                // Desabilita o botÃ£o para evitar cliques mÃºltiplos
+                const btnConfirmar = document.getElementById('btnConfirmarLimpeza');
+                btnConfirmar.disabled = true;
+                btnConfirmar.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Executando...';
+                
+                // Faz a requisiÃ§Ã£o AJAX para o endpoint de limpeza
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                const bodyParams = new URLSearchParams();
+                if (token) bodyParams.append('__RequestVerificationToken', token);
+                bodyParams.append('senha', senha);
+
+                fetch('/OrdemServico/LimparTodasOrdens', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: bodyParams.toString()
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Fecha o modal
+                    bootstrap.Modal.getInstance(document.getElementById('modalLimpezaCompleta')).hide();
+                    
+                    if (data.success) {
+                         // Exibe mensagem de sucesso
+                         alert(data.message);
+                         
+                         // Recarrega a pÃ¡gina apÃ³s 2 segundos para mostrar o resultado
+                         setTimeout(() => {
+                             window.location.reload();
+                         }, 2000);
+                     } else {
+                         // Exibe mensagem de erro
+                         alert(data.message);
+                        
+                        // Reabilita o botÃ£o
+                        btnConfirmar.disabled = false;
+                        btnConfirmar.innerHTML = '<i class="bi bi-trash3 me-2"></i>Confirmar Limpeza';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    
+                    // Fecha o modal
+                    bootstrap.Modal.getInstance(document.getElementById('modalLimpezaCompleta')).hide();
+                    
+                    // Exibe mensagem de erro
+                     alert('Ocorreu um erro inesperado durante a limpeza.');
+                    
+                    // Reabilita o botÃ£o
+                    btnConfirmar.disabled = false;
+                    btnConfirmar.innerHTML = '<i class="bi bi-trash3 me-2"></i>Confirmar Limpeza';
+                });
+            }
+            
+            // Função para obter conexão SignalR (compatibilidade com código existente)
+            window.getGlobalSignalRConnection = function() {
+                return globalConnection;
+            };
+            
+            // Event listener para habilitar/desabilitar o botÃ£o de confirmaÃ§Ã£o
+            document.addEventListener('DOMContentLoaded', function() {
+                const checkbox = document.getElementById('confirmarLimpeza');
+                const btnConfirmar = document.getElementById('btnConfirmarLimpeza');
+                
+                if (checkbox && btnConfirmar) {
+                    checkbox.addEventListener('change', function() {
+                        btnConfirmar.disabled = !this.checked;
+                    });
+                }
+                
+                // Funcionalidade do toggle do filtro
+                initializeFilterToggle();
+                
+                // Inicializa SignalR quando a página carrega (com delay para não bloquear)
+                // Delay de 1 segundo para não impactar o carregamento inicial
+                setTimeout(initializeSignalR, 1000);
+                
+                // Configura monitoramento de sessão
+                setupSessionMonitoring();
+            });
+            
+            // FunÃ§Ã£o para inicializar o toggle do filtro
+            function initializeFilterToggle() {
+                const toggleBtn = document.querySelector('.filter-toggle-btn');
+                const filterContainer = document.getElementById('filterContainer');
+                const toggleText = document.querySelector('.toggle-text');
+                
+                if (toggleBtn && filterContainer) {
+                    // Configura o filtro para iniciar sempre fechado
+                    filterContainer.classList.add('collapsed');
+                    toggleBtn.setAttribute('aria-expanded', 'false');
+                    
+                    // Event listener para o botÃ£o toggle
+                    toggleBtn.addEventListener('click', function() {
+                        const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                        
+                        // Atualiza o estado do botÃ£o
+                        this.setAttribute('aria-expanded', !isExpanded);
+                        
+                        // Atualiza o texto do botÃ£o
+                        if (toggleText) {
+                            toggleText.textContent = isExpanded ? 'Mostrar Filtros' : 'Ocultar Filtros';
+                        }
+                        
+                        // Controla a visibilidade do filtro
+                        if (isExpanded) {
+                            // Fechando o filtro
+                            filterContainer.classList.add('collapsed');
+                        } else {
+                            // Abrindo o filtro
+                            filterContainer.classList.remove('collapsed');
+                        }
+                    });
+                    
+                    // Event listener para quando o collapse do Bootstrap termina
+                    filterContainer.addEventListener('shown.bs.collapse', function() {
+                        filterContainer.classList.remove('collapsed');
+                    });
+                    
+                    filterContainer.addEventListener('hidden.bs.collapse', function() {
+                        filterContainer.classList.add('collapsed');
+                    });
+                }
+            }
+
+        </script>
+    }
+    
+    <!-- Modal para confirmaÃ§Ã£o de limpeza completa -->
+    @if (User.IsInRole("Admin"))
+    {
+        <div class="modal fade" id="modalLimpezaCompleta" tabindex="-1" aria-labelledby="modalLimpezaCompletaLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="modalLimpezaCompletaLabel">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Confirma&ccedil;&atilde;o de Limpeza Completa
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>ATEN&Ccedil;&Atilde;O:</strong> Esta a&ccedil;&atilde;o &eacute; irrevers&iacute;vel!
+                        </div>
+                        <p>Voc&ecirc; est&aacute; prestes a <strong>remover TODAS as ordens de servi&ccedil;o</strong> do sistema, incluindo:</p>
+                        <ul>
+                            <li><i class="bi bi-clipboard-x text-danger me-2"></i>Todas as ordens de servi&ccedil;o</li>
+                            <li><i class="bi bi-chat-text text-danger me-2"></i>Todas as mensagens relacionadas</li>
+                            <li><i class="bi bi-paperclip text-danger me-2"></i>Todos os anexos relacionados</li>
+                        </ul>
+                        <p class="text-danger"><strong>Esta opera&ccedil;&atilde;o n&atilde;o pode ser desfeita!</strong></p>
+                            <div class="form-check mt-3 mb-3">
+                                <input class="form-check-input" type="checkbox" id="confirmarLimpeza">
+                                <label class="form-check-label" for="confirmarLimpeza">
+                                    Eu entendo que esta a&ccedil;&atilde;o &eacute; irrevers&iacute;vel e confirmo a limpeza completa
+                                </label>
+                            </div>
+                            <div class="mb-3">
+                                <label for="senhaLimpeza" class="form-label fw-bold">Senha de Administrador</label>
+                                <input type="password" class="form-control" id="senhaLimpeza" placeholder="Digite a senha de segurança">
+                            </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-2"></i>
+                            Cancelar
+                        </button>
+                        <button type="button" class="btn btn-danger" id="btnConfirmarLimpeza" disabled onclick="executarLimpezaCompleta()">
+                            <i class="bi bi-trash3 me-2"></i>
+                            Confirmar Limpeza
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+
+<script>
+    // FunÃ§Ã£o para detectar e tratar expiraÃ§Ã£o de sessÃ£o
+    function setupSessionMonitoring() {
+        // Intercepta todas as requisiÃ§Ãµes AJAX para detectar erro 401 (nÃ£o autorizado)
+        $(document).ajaxError(function(event, xhr, settings) {
+            if (xhr.status === 401) {
+                // SessÃ£o expirou - mostra modal de aviso e redireciona para login
+                showSessionExpiredModal();
+            }
+        });
+        
+        // Monitora requisiÃ§Ãµes fetch tambÃ©m
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            return originalFetch.apply(this, args)
+                .then(response => {
+                    if (response.status === 401) {
+                        showSessionExpiredModal();
+                    }
+                    return response;
+                });
+        };
+    }
+    
+    // FunÃ§Ã£o para mostrar modal de sessÃ£o expirada
+    function showSessionExpiredModal() {
+        // Remove modais existentes para evitar duplicaÃ§Ã£o
+        $('#sessionExpiredModal').remove();
+        
+        // Cria o modal dinamicamente
+        const modalHtml = `
+            <div class="modal fade" id="sessionExpiredModal" tabindex="-1" role="dialog" aria-labelledby="sessionExpiredModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning text-dark">
+                            <h5 class="modal-title" id="sessionExpiredModalLabel">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                SessÃ£o Expirada
+                            </h5>
+                        </div>
+                        <div class="modal-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-clock fa-3x text-warning"></i>
+                            </div>
+                            <h6>Sua sessÃ£o expirou por inatividade</h6>
+                            <p class="text-muted">Por motivos de seguranÃ§a, vocÃª serÃ¡ redirecionado para a pÃ¡gina de login.</p>
+                            <div class="mt-3">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="sr-only">Carregando...</span>
+                                </div>
+                                <span class="ml-2">Redirecionando em <span id="countdown">5</span> segundos...</span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" onclick="redirectToLogin()">
+                                <i class="fas fa-sign-in-alt"></i>
+                                Fazer Login Agora
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Adiciona o modal ao body
+        $('body').append(modalHtml);
+        
+        // Mostra o modal
+        $('#sessionExpiredModal').modal('show');
+        
+        // Inicia contagem regressiva
+        let countdown = 5;
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            $('#countdown').text(countdown);
+            
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                redirectToLogin();
+            }
+        }, 1000);
+    }
+    
+    // FunÃ§Ã£o para redirecionar para login
+    function redirectToLogin() {
+        window.location.href = '@Url.Action("Login", "Account")';
+    }
+    
+    // Função setupSessionMonitoring será chamada no DOMContentLoaded acima
+</script>
+
+

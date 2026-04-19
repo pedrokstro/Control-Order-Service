@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Debug Modal Chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+</head>
+<body>
+    <div class="container mt-4">
+        <h2>Teste Debug - Modal Chat</h2>
+        
+        <!-- Simular estrutura do modal -->
+        <div class="card">
+            <div class="card-header">
+                <h5>Chat de Teste</h5>
+            </div>
+            <div class="card-body">
+                <!-- Área de mensagens -->
+                <div id="chat-messages-modal" class="border rounded p-3 mb-3" style="height: 300px; overflow-y: auto;">
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-chat-square-dots h4 mb-2"></i>
+                        <p class="mb-0">Nenhuma mensagem ainda. Inicie a conversa!</p>
+                    </div>
+                </div>
+                
+                <!-- Formulário de envio -->
+                <form id="form-enviar-mensagem-modal" method="post" enctype="multipart/form-data" onsubmit="return false;">
+                    <input type="hidden" name="ordemServicoId" value="123" />
+                    
+                    <div class="input-group">
+                        <input type="text" 
+                               name="conteudo" 
+                               id="conteudo-mensagem-modal" 
+                               class="form-control" 
+                               placeholder="Digite sua mensagem..." 
+                               maxlength="1000" 
+                               autocomplete="off" />
+                        
+                        <!-- Botão de Anexo -->
+                        <label for="anexo-modal" class="btn btn-outline-secondary" title="Anexar arquivo">
+                            <i class="bi bi-paperclip"></i>
+                        </label>
+                        <input type="file" 
+                               name="anexos" 
+                               id="anexo-modal" 
+                               class="d-none" 
+                               multiple 
+                               accept="image/*,.pdf,.doc,.docx,.txt" />
+                        
+                        <!-- Botão de Envio -->
+                        <button type="button" id="btn-enviar-mensagem-modal" class="btn btn-primary" title="Enviar mensagem">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Preview de Anexos -->
+                    <div id="preview-anexos-modal" class="mt-2" style="display: none;"></div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Log de debug -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6>Log de Debug</h6>
+            </div>
+            <div class="card-body">
+                <div id="debug-log" class="bg-dark text-light p-3 rounded" style="height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para adicionar log de debug
+        function addDebugLog(message) {
+            const debugLog = document.getElementById('debug-log');
+            const timestamp = new Date().toLocaleTimeString();
+            debugLog.innerHTML += `[${timestamp}] ${message}\n`;
+            debugLog.scrollTop = debugLog.scrollHeight;
+        }
+        
+        // Interceptar console.log para mostrar no debug
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            addDebugLog('LOG: ' + args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            addDebugLog('ERROR: ' + args.join(' '));
+        };
+        
+        // Inicializar chat imediatamente quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 INICIALIZANDO CHAT DE TESTE...');
+            
+            // Aguardar um pequeno delay para garantir que todos os elementos estejam renderizados
+            setTimeout(function() {
+                console.log('⏰ Timeout executado, inicializando chat...');
+                
+                // Elementos do chat
+                const messageInput = document.getElementById('conteudo-mensagem-modal');
+                const sendButton = document.getElementById('btn-enviar-mensagem-modal');
+                const chatForm = document.getElementById('form-enviar-mensagem-modal');
+                const chatMessages = document.getElementById('chat-messages-modal');
+                const fileInput = document.getElementById('anexo-modal');
+                const previewContainer = document.getElementById('preview-anexos-modal');
+                
+                // Verificar se todos os elementos foram encontrados
+                if (!messageInput || !sendButton || !chatForm || !chatMessages || !fileInput || !previewContainer) {
+                    console.error('ERRO CRÍTICO: Nem todos os elementos do chat foram encontrados!');
+                    console.log('chatMessages:', chatMessages, 'ID:', 'chat-messages-modal');
+                    console.log('messageInput:', messageInput, 'ID:', 'conteudo-mensagem-modal');
+                    console.log('sendButton:', sendButton, 'ID:', 'btn-enviar-mensagem-modal');
+                    console.log('fileInput:', fileInput, 'ID:', 'anexo-modal');
+                    console.log('previewContainer:', previewContainer, 'ID:', 'preview-anexos-modal');
+                    console.log('chatForm:', chatForm, 'ID:', 'form-enviar-mensagem-modal');
+                    return;
+                }
+                
+                console.log('✅ Todos os elementos do chat foram encontrados!');
+                console.log('✅ chatMessages:', chatMessages);
+                console.log('✅ messageInput:', messageInput);
+                console.log('✅ sendButton:', sendButton);
+                console.log('✅ fileInput:', fileInput);
+                console.log('✅ previewContainer:', previewContainer);
+                console.log('✅ chatForm:', chatForm);
+                
+                // Função de teste para envio de mensagem
+                function testSendMessage() {
+                    console.log('🚀 TESTE: INICIANDO ENVIO DE MENSAGEM...');
+                    
+                    const content = messageInput.value.trim();
+                    console.log('📝 Conteúdo da mensagem:', content);
+                    
+                    if (!content) {
+                        console.log('❌ ERRO: Nenhum conteúdo fornecido');
+                        alert('Digite uma mensagem antes de enviar.');
+                        messageInput.focus();
+                        return;
+                    }
+                    
+                    console.log('✅ Validação passou - simulando envio...');
+                    
+                    // Simular adição de mensagem
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'mb-2 text-end';
+                    messageDiv.innerHTML = `
+                        <div class="d-inline-block p-2 rounded bg-primary text-white" style="max-width: 80%; word-wrap: break-word;">
+                            <div style="white-space: pre-wrap;">${content}</div>
+                            <div class="small mt-1 text-white-50">
+                                ${new Date().toLocaleString('pt-BR')}
+                            </div>
+                        </div>
+                    `;
+                    
+                    chatMessages.appendChild(messageDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    // Limpar campo
+                    messageInput.value = '';
+                    messageInput.focus();
+                    
+                    console.log('✅ Mensagem de teste adicionada com sucesso!');
+                }
+                
+                // Event listener para o botão de envio
+                sendButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('🔥 BOTÃO DE ENVIO CLICADO!');
+                    console.log('🔥 Elemento clicado:', e.target);
+                    console.log('🔥 Chamando testSendMessage...');
+                    testSendMessage();
+                });
+                
+                // Event listener para Enter no campo de mensagem
+                messageInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        console.log('🔥 ENTER PRESSIONADO!');
+                        console.log('🔥 Tecla:', e.key);
+                        console.log('🔥 Chamando testSendMessage...');
+                        testSendMessage();
+                    }
+                });
+                
+                // Focar no campo de entrada
+                messageInput.focus();
+                
+                console.log('✅ Chat de teste inicializado com sucesso!');
+                
+            }, 100);
+        });
+    </script>
+</body>
+</html>

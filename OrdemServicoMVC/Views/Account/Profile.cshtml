@@ -1,0 +1,156 @@
+@model OrdemServicoMVC.ViewModels.UserProfileViewModel
+@{
+    ViewData["Title"] = "Perfil";
+}
+
+<section class="container-fluid px-3 px-md-5 py-4 fadeIn">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <div class="profile-card">
+                <div class="profile-header text-center">
+                    <div class="avatar">
+                        <span>@Model.UserName?.FirstOrDefault()</span>
+                    </div>
+                    <h2>@Model.UserName</h2>
+                    <p class="text-muted mb-2">@Model.Email</p>
+                    <div class="profile-chips">
+                        @if (Model.IsAdmin)
+                        {
+                            <span class="chip chip-admin">Admin</span>
+                        }
+                        else
+                        {
+                            <span class="chip chip-user">Usuário</span>
+                        }
+                        @if (Model.IsTecnico)
+                        {
+                            <span class="chip chip-tecnico">Técnico</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="profile-body">
+                    <div class="info-row">
+                        <span class="label">Loja</span>
+                        <span class="value">@Model.NomeLoja</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Telefone</span>
+                        <span class="value">@(!string.IsNullOrEmpty(Model.PhoneNumber) ? Model.PhoneNumber : "Não informado")</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Membro desde</span>
+                        <span class="value">@Model.MemberSince?.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Perfis</span>
+                        <span class="value">@string.Join(", ", Model.Roles)</span>
+                    </div>
+                </div>
+
+                <div class="profile-actions d-none d-lg-flex">
+                    <a asp-controller="OrdemServico" asp-action="Create" class="btn btn-primary w-100">
+                        <i class="bi bi-plus-circle me-2"></i>Nova Ordem
+                    </a>
+                    <a asp-controller="OrdemServico" asp-action="Index" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-list-check me-2"></i>Minhas Ordens
+                    </a>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="w-100">
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            <i class="bi bi-box-arrow-right me-2"></i>Sair da conta
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <style>
+        .profile-card {
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+            padding: 2rem;
+        }
+
+        .profile-header .avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: #e0e7ff;
+            color: #4338ca;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .profile-chips {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .chip-admin {
+            background: rgba(248, 113, 113, 0.15);
+            color: #dc2626;
+        }
+
+        .chip-user {
+            background: rgba(59, 130, 246, 0.15);
+            color: #1d4ed8;
+        }
+
+        .chip-tecnico {
+            background: rgba(16, 185, 129, 0.15);
+            color: #047857;
+        }
+
+        .profile-body {
+            margin-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.85rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-row .label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .info-row .value {
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .profile-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1.75rem;
+        }
+    </style>
+}

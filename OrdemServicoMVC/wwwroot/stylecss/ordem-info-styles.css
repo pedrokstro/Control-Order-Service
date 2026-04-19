@@ -1,0 +1,149 @@
+/* Estilos para a nova coluna unificada de informações da ordem */
+.table-full-info-col {
+    width: 80% !important;
+    max-width: none !important;
+    min-width: 450px !important;
+    vertical-align: top !important;
+    padding: 0.45rem 0.75rem !important;
+}
+
+/* Coluna de ações (Prioridade, Técnico, Status) - reduzida */
+.table-actions-col {
+    width: 20% !important;
+    max-width: 240px !important;
+    min-width: 180px !important;
+    vertical-align: top !important;
+    padding: 0.45rem 0.75rem !important;
+}
+
+/* Separador visual entre ordens */
+.modern-table-row {
+    border-bottom: 2px solid #e9ecef !important;
+    transition: all 0.2s ease;
+}
+
+.modern-table-row:hover {
+    background-color: #f0f4f8 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    transform: translateY(-1px);
+}
+
+/* Alternância de cores para melhor distinção - com !important para sobrescrever outros estilos */
+.modern-table tbody .modern-table-row:nth-child(even),
+.modern-table tbody tr.modern-table-row:nth-child(even) {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+.modern-table tbody .modern-table-row:nth-child(odd),
+.modern-table tbody tr.modern-table-row:nth-child(odd) {
+    background: #f8f9fa !important;
+    background-color: #f8f9fa !important;
+    background-image: none !important;
+}
+
+/* Garantir que as células também herdem o background */
+.modern-table-row td {
+    background: inherit !important;
+    background-color: inherit !important;
+    background-image: none !important;
+}
+
+/* Sobrescrever hover com gradiente */
+.modern-table tbody .modern-table-row:hover,
+.modern-table tbody tr.modern-table-row:hover {
+    background: #e8f0fe !important;
+    background-color: #e8f0fe !important;
+    background-image: none !important;
+}
+
+.ordem-info-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.ordem-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.15rem;
+}
+
+.ordem-titulo {
+    font-size: 1.05rem;
+    color: #2c3e50;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.ordem-descricao {
+    line-height: 1.3;
+    color: #6c757d;
+    margin-bottom: 0.15rem;
+}
+
+.ordem-descricao small {
+    font-size: 0.9rem;
+}
+
+.ordem-info-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+.ordem-info-badges .badge-setor-info,
+.ordem-info-badges .badge-user-info,
+.ordem-info-badges .badge-date-info {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.8rem;
+    border-radius: 50px;
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
+.ordem-info-badges strong {
+    font-weight: 600;
+    margin-right: 0.25rem;
+}
+
+/* Responsividade */
+@media (max-width: 992px) {
+    .table-full-info-col {
+        width: 75% !important;
+        min-width: 350px !important;
+    }
+
+    .table-actions-col {
+        width: 25% !important;
+        max-width: 220px !important;
+    }
+
+    .ordem-titulo {
+        font-size: 1rem;
+    }
+
+    .ordem-info-badges {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .table-full-info-col {
+        width: 100% !important;
+        min-width: 300px !important;
+    }
+
+    .ordem-info-badges .badge-setor-info,
+    .ordem-info-badges .badge-user-info,
+    .ordem-info-badges .badge-date-info {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+}

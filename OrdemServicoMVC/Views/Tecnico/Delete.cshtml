@@ -1,0 +1,71 @@
+@model OrdemServicoMVC.ViewModels.UserViewModel
+
+@{
+    ViewData["Title"] = "Excluir Técnico";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> @ViewData["Title"]
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Atenção!</strong> Esta ação não pode ser desfeita.
+                    </div>
+
+                    <p class="lead">Tem certeza de que deseja excluir este técnico?</p>
+                    
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Nome do Técnico:</strong></div>
+                        <div class="col-sm-8">@Model.NomeLoja</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Nome de Usuário:</strong></div>
+                        <div class="col-sm-8">@Model.UserName</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Email:</strong></div>
+                        <div class="col-sm-8">@Model.Email</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Data de Criação:</strong></div>
+                        <div class="col-sm-8">@Model.DataCriacao.ToString("dd/MM/yyyy às HH:mm")</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Status:</strong></div>
+                        <div class="col-sm-8">
+                            @if (Model.EmailConfirmed)
+                            {
+                                <span class="badge bg-success">Ativo</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning">Pendente</span>
+                            }
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <form asp-action="Delete" method="post" class="d-inline">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza de que deseja excluir este técnico?')">
+                                <i class="fas fa-trash"></i> Confirmar Exclusão
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

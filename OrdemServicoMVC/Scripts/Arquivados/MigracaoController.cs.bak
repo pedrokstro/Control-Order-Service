@@ -1,0 +1,327 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
+using Microsoft.Data.SqlClient;
+using System.Text;
+
+namespace OrdemServicoMVC.Controllers
+{
+    /// <summary>
+    /// Controller temporário para migração de dados SQLite → SQL Server
+    /// REMOVER APÓS A MIGRAÇÃO
+    /// </summary>
+    [Authorize(Roles = "Admin")]
+    public class MigracaoController : Controller
+    {
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<MigracaoController> _logger;
+
+        public MigracaoController(IConfiguration configuration, ILogger<MigracaoController> logger)
+        {
+            _configuration = configuration;
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// Executa a migração completa do SQLite para SQL Server
+        /// GET: /Migracao/Executar
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Executar()
+        {
+            var sqliteConnStr = "Data Source=ordemservico_prod.db";
+            var sqlServerConnStr = _configuration.GetConnectionString("SqlServerConnection");
+
+            if (string.IsNullOrEmpty(sqlServerConnStr))
+            {
+                return Json(new { sucesso = false, erro = "SqlServerConnection não encontrada no appsettings.json" });
+            }
+
+            var resultado = new Dictionary<string, object>();
+            var log = new StringBuilder();
+            log.AppendLine("=== MIGRAÇÃO SQLite → SQL Server ===");
+            log.AppendLine($"Início: {DateTime.Now:dd/MM/yyyy HH:mm:ss}");
+            log.AppendLine();
+
+            // Tabelas na ordem correta (respeitando foreign keys)
+            var tabelas = new[]
+            {
+                "AspNetRoles",
+                "AspNetUsers",
+                "AspNetUserRoles",
+                "AspNetRoleClaims",
+                "AspNetUserClaims",
+                "AspNetUserLogins",
+                "AspNetUserTokens",
+                "OrdensServico",
+                "Mensagens",
+                "Anexos"
+            };
+
+            try
+            {
+                // PASSO 1: Criar schema no SQL Server
+                log.AppendLine("[1] Criando schema no SQL Server...");
+                await CriarSchema(sqlServerConnStr, log);
+
+                // PASSO 2: Migrar dados tabela por tabela
+                log.AppendLine();
+                log.AppendLine("[2] Migrando dados...");
+
+                foreach (var tabela in tabelas)
+                {
+                    try
+                    {
+                        var count = await MigrarTabela(sqliteConnStr, sqlServerConnStr, tabela, log);
+                        resultado[tabela] = new { sucesso = true, registros = count };
+                        log.AppendLine($"  ✓ {tabela}: {count} registros migrados");
+                    }
+                    catch (Exception ex)
+                    {
+                        resultado[tabela] = new { sucesso = false, erro = ex.Message };
+                        log.AppendLine($"  ✗ {tabela}: ERRO - {ex.Message}");
+                        _logger.LogError(ex, "Erro ao migrar tabela {Tabela}", tabela);
+                    }
+                }
+
+                log.AppendLine();
+                log.AppendLine($"Fim: {DateTime.Now:dd/MM/yyyy HH:mm:ss}");
+                log.AppendLine("=== MIGRAÇÃO CONCLUÍDA ===");
+
+                return Json(new
+                {
+                    sucesso = true,
+                    resultados = resultado,
+                    log = log.ToString()
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro geral na migração");
+                return Json(new
+                {
+                    sucesso = false,
+                    erro = ex.Message,
+                    stackTrace = ex.StackTrace,
+                    resultados = resultado,
+                    log = log.ToString()
+                });
+            }
+        }
+
+        /// <summary>
+        /// Testa a conexão com o SQL Server
+        /// GET: /Migracao/TestarConexao
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> TestarConexao()
+        {
+            var sqlServerConnStr = _configuration.GetConnectionString("SqlServerConnection");
+            
+            try
+            {
+                using var conn = new SqlConnection(sqlServerConnStr);
+                await conn.OpenAsync();
+                
+                return Json(new 
+                { 
+                    sucesso = true, 
+                    mensagem = "Conexão com SQL Server estabelecida!",
+                    servidor = conn.DataSource,
+                    banco = conn.Database,
+                    versao = conn.ServerVersion
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new 
+                { 
+                    sucesso = false, 
+                    erro = ex.Message 
+                });
+            }
+        }
+
+        /// <summary>
+        /// Verifica os dados do SQLite de produção
+        /// GET: /Migracao/VerificarOrigem
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> VerificarOrigem()
+        {
+            var sqliteConnStr = "Data Source=ordemservico_prod.db";
+            var contagens = new Dictionary<string, int>();
+
+            try
+            {
+                using var conn = new SqliteConnection(sqliteConnStr);
+                await conn.OpenAsync();
+
+                var tabelas = new[] { "AspNetRoles", "AspNetUsers", "AspNetUserRoles", "OrdensServico", "Mensagens", "Anexos" };
+
+                foreach (var tabela in tabelas)
+                {
+                    using var cmd = conn.CreateCommand();
+                    cmd.CommandText = $"SELECT COUNT(*) FROM [{tabela}]";
+                    contagens[tabela] = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+                }
+
+                return Json(new { sucesso = true, dados = contagens });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { sucesso = false, erro = ex.Message });
+            }
+        }
+
+        private async Task CriarSchema(string sqlServerConnStr, StringBuilder log)
+        {
+            using var conn = new SqlConnection(sqlServerConnStr);
+            await conn.OpenAsync();
+
+            // Verifica se as tabelas já existem
+            using var checkCmd = new SqlCommand(
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'AspNetUsers'", conn);
+            var tableExists = (int)await checkCmd.ExecuteScalarAsync() > 0;
+
+            if (tableExists)
+            {
+                log.AppendLine("  Schema já existe no SQL Server. Limpando dados existentes...");
+                
+                // Limpar dados na ordem inversa (respeitar FKs)
+                var tabelasLimpar = new[]
+                {
+                    "Anexos", "Mensagens", "OrdensServico",
+                    "AspNetUserTokens", "AspNetUserLogins", "AspNetUserClaims",
+                    "AspNetUserRoles", "AspNetRoleClaims", 
+                    "AspNetUsers", "AspNetRoles"
+                };
+
+                foreach (var tabela in tabelasLimpar)
+                {
+                    try
+                    {
+                        using var deleteCmd = new SqlCommand($"DELETE FROM [{tabela}]", conn);
+                        var deleted = await deleteCmd.ExecuteNonQueryAsync();
+                        if (deleted > 0) log.AppendLine($"  Limpos {deleted} registros de [{tabela}]");
+                    }
+                    catch (Exception ex)
+                    {
+                        log.AppendLine($"  Aviso ao limpar [{tabela}]: {ex.Message}");
+                    }
+                }
+                
+                log.AppendLine("  ✓ Dados existentes limpos");
+            }
+            else
+            {
+                log.AppendLine("  Tabelas não encontradas. Criando schema...");
+                // O EnsureCreated() do EF Core será usado para criar o schema
+                // Precisamos usar o ApplicationDbContext para isso
+                log.AppendLine("  ⚠ Inicie o app com DatabaseProvider='SqlServer' primeiro para criar o schema");
+                throw new InvalidOperationException(
+                    "Schema não existe no SQL Server. Altere DatabaseProvider para 'SqlServer' no appsettings.json, " +
+                    "execute 'dotnet run' uma vez para criar as tabelas, e depois execute esta migração novamente.");
+            }
+        }
+
+        private async Task<int> MigrarTabela(string sqliteConnStr, string sqlServerConnStr, string tabela, StringBuilder log)
+        {
+            int count = 0;
+
+            using var srcConn = new SqliteConnection(sqliteConnStr);
+            await srcConn.OpenAsync();
+
+            using var destConn = new SqlConnection(sqlServerConnStr);
+            await destConn.OpenAsync();
+
+            // Ler dados do SQLite
+            using var readCmd = srcConn.CreateCommand();
+            readCmd.CommandText = $"SELECT * FROM [{tabela}]";
+
+            using var reader = await readCmd.ExecuteReaderAsync();
+
+            if (!reader.HasRows) return 0;
+
+            // Obter nomes das colunas
+            var columns = new List<string>();
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                columns.Add(reader.GetName(i));
+            }
+
+            var columnList = string.Join(", ", columns.Select(c => $"[{c}]"));
+            var paramList = string.Join(", ", columns.Select((c, i) => $"@p{i}"));
+
+            // Tentar habilitar IDENTITY_INSERT
+            bool hasIdentity = false;
+            try
+            {
+                using var identityCmd = new SqlCommand($"SET IDENTITY_INSERT [{tabela}] ON", destConn);
+                await identityCmd.ExecuteNonQueryAsync();
+                hasIdentity = true;
+            }
+            catch
+            {
+                // Tabela não tem identity column (ex: AspNetUserRoles)
+            }
+
+            // Inserir dados um a um
+            while (await reader.ReadAsync())
+            {
+                var insertSql = $"INSERT INTO [{tabela}] ({columnList}) VALUES ({paramList})";
+                using var insertCmd = new SqlCommand(insertSql, destConn);
+
+                for (int i = 0; i < columns.Count; i++)
+                {
+                    var value = reader.GetValue(i);
+                    
+                    // Converter tipos SQLite para SQL Server
+                    if (value is DBNull)
+                    {
+                        insertCmd.Parameters.AddWithValue($"@p{i}", DBNull.Value);
+                    }
+                    else if (value is long longVal)
+                    {
+                        // SQLite armazena booleans como 0/1 (INTEGER)
+                        // e IDs inteiros como long
+                        insertCmd.Parameters.AddWithValue($"@p{i}", longVal);
+                    }
+                    else if (value is byte[] byteArr)
+                    {
+                        // Dados binários (anexos/DadosArquivo)
+                        insertCmd.Parameters.AddWithValue($"@p{i}", byteArr);
+                    }
+                    else
+                    {
+                        insertCmd.Parameters.AddWithValue($"@p{i}", value);
+                    }
+                }
+
+                try
+                {
+                    await insertCmd.ExecuteNonQueryAsync();
+                    count++;
+                }
+                catch (Exception ex)
+                {
+                    log.AppendLine($"    Erro inserindo em [{tabela}] (reg {count + 1}): {ex.Message}");
+                    // Continua com o próximo registro
+                }
+            }
+
+            // Desabilitar IDENTITY_INSERT
+            if (hasIdentity)
+            {
+                try
+                {
+                    using var disableCmd = new SqlCommand($"SET IDENTITY_INSERT [{tabela}] OFF", destConn);
+                    await disableCmd.ExecuteNonQueryAsync();
+                }
+                catch { }
+            }
+
+            return count;
+        }
+    }
+}

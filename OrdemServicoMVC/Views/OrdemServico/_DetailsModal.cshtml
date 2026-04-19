@@ -1,0 +1,721 @@
+@model OrdemServicoMVC.Models.OrdemServico
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+
+<!-- Container principal com design moderno inspirado no login - versão compacta -->
+<div class="modal-details-container p-0" data-ordem-id="@Model.Id">
+    <!-- Card principal com glassmorphism -->
+    <div class="modal-info-card border-0 mb-0">
+        <!-- Cabeçalho moderno com gradiente -->
+        <div class="modal-card-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-file-text me-2"></i>
+                <h6 class="modal-card-title mb-0">@Model.Titulo</h6>
+            </div>
+        </div>
+        
+        <div class="card-body p-2">
+            <!-- Seção de Informações da Ordem - layout compacto -->
+            <div class="modal-info-section">
+                <h6 class="modal-section-title">
+                    <i class="bi bi-info-circle"></i>
+                    Informações da Ordem
+                </h6>
+                
+                <!-- Grid moderno de informações - mais compacto -->
+                <div class="modal-info-grid">
+                    <!-- ID da Ordem -->
+                    <div class="modal-info-item">
+                        <div class="modal-info-icon">
+                            <i class="bi bi-hash"></i>
+                        </div>
+                        <div class="modal-info-content">
+                            <div class="modal-info-label">ID da Ordem</div>
+                            <div class="modal-info-value">#@Model.Id</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Criado por -->
+                    <div class="modal-info-item">
+                        <div class="modal-info-icon">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <div class="modal-info-content">
+                            <div class="modal-info-label">Criado por</div>
+                            <div class="modal-info-value">
+                                @Model.UsuarioCriador?.NomeLoja
+                                <small class="text-muted d-block">@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Técnico Responsável -->
+                    <div class="modal-info-item">
+                        <div class="modal-info-icon">
+                            <i class="bi bi-tools"></i>
+                        </div>
+                        <div class="modal-info-content">
+                            <div class="modal-info-label">Técnico Responsável</div>
+                            <div class="modal-info-value">
+                                @if (Model.TecnicoResponsavel != null)
+                                {
+                                    @Model.TecnicoResponsavel.NomeLoja
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Não atribuído</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Prioridade -->
+                    <div class="modal-info-item">
+                        <div class="modal-info-icon">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <div class="modal-info-content">
+                            <div class="modal-info-label">Prioridade</div>
+                            <div class="modal-info-value">
+                                @if (Model.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Alta)
+                                {
+                                    <span class="modal-badge modal-badge-alta">
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                        Alta
+                                    </span>
+                                }
+                                else if (Model.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Media)
+                                {
+                                    <span class="modal-badge modal-badge-media">
+                                        <i class="bi bi-dash-circle"></i>
+                                        Média
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="modal-badge modal-badge-baixa">
+                                        <i class="bi bi-check-circle"></i>
+                                        Baixa
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="modal-info-item">
+                        <div class="modal-info-icon">
+                            <i class="bi bi-flag"></i>
+                        </div>
+                        <div class="modal-info-content">
+                            <div class="modal-info-label">Status</div>
+                            <div class="modal-info-value">
+                                @switch (Model.Status)
+                                {
+                                    case OrdemServicoMVC.Models.StatusEnum.Aberta:
+                                        <span class="modal-badge modal-badge-aberta">
+                                            <i class="bi bi-circle"></i>
+                                            Aberta
+                                        </span>
+                                        break;
+                                    case OrdemServicoMVC.Models.StatusEnum.EmAndamento:
+                                        <span class="modal-badge modal-badge-andamento">
+                                            <i class="bi bi-arrow-clockwise"></i>
+                                            Em Andamento
+                                        </span>
+                                        break;
+                                    case OrdemServicoMVC.Models.StatusEnum.Concluida:
+                                        <span class="modal-badge modal-badge-concluida">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            Concluída
+                                        </span>
+                                        break;
+                                }
+                                @if (Model.DataConclusao.HasValue)
+                                {
+                                    <small class="text-muted d-block">Concluída em @Model.DataConclusao.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Setor -->
+                    <div class="modal-info-item">
+                        <div class="modal-info-icon">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <div class="modal-info-content">
+                            <div class="modal-info-label">Setor</div>
+                            <div class="modal-info-value">
+                                <span class="modal-badge modal-badge-setor">
+                                    <i class="bi bi-geo-alt"></i>
+                                    @Model.Setor.ToString().Replace("FrenteDeCaixa", "Frente de Caixa")
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seção de Descrição - compacta -->
+            <div class="modal-info-section">
+                <h6 class="modal-section-title">
+                    <i class="bi bi-card-text"></i>
+                    Descrição Completa
+                </h6>
+                <div class="modal-description-area">
+                    <div class="modal-description-text">@Model.Descricao</div>
+                </div>
+            </div>
+                
+            <!-- ============================================================ -->
+            <!-- Seção de Anexos - GALERIA COM LIGHTBOX -->
+            <!-- ============================================================ -->
+            @if (Model.Anexos != null && Model.Anexos.Any())
+            {
+                <div class="modal-info-section">
+                    <h6 class="modal-section-title">
+                        <i class="bi bi-paperclip"></i>
+                        Anexos (@Model.Anexos.Count())
+                        <small class="text-muted ms-2 fw-normal">Clique na imagem para ampliar</small>
+                    </h6>
+
+                    <!-- Grade de miniaturas -->
+                    <div class="anexo-gallery-grid">
+                        @foreach (var anexo in Model.Anexos)
+                        {
+                            var downloadUrl = Url.Action("Download", "Anexo", new { id = anexo.Id });
+                            var isImage = anexo.TipoMime.StartsWith("image/");
+                            <div class="anexo-gallery-item" 
+                                 data-anexo-url="@downloadUrl"
+                                 data-anexo-nome="@anexo.NomeArquivo"
+                                 data-is-image="@isImage.ToString().ToLower()">
+                                @if (isImage)
+                                {
+                                    <!-- Miniatura clicável (abre lightbox) -->
+                                    <div class="anexo-thumb-wrapper" onclick="abrirLightbox('@downloadUrl', '@anexo.NomeArquivo', 'image')" title="Clique para ampliar">
+                                        <img src="@downloadUrl"
+                                             alt="@anexo.NomeArquivo"
+                                             class="anexo-thumb-img"
+                                             loading="lazy" />
+                                        <div class="anexo-thumb-overlay">
+                                            <i class="bi bi-zoom-in"></i>
+                                        </div>
+                                    </div>
+                                }
+                                else if (anexo.TipoMime.StartsWith("video/"))
+                                {
+                                    <!-- Miniatura clicável para vídeo -->
+                                    <div class="anexo-thumb-wrapper anexo-thumb-video" onclick="abrirLightbox('@downloadUrl', '@anexo.NomeArquivo', 'video', '@anexo.TipoMime')" title="Clique para reproduzir">
+                                        <div class="anexo-file-icon-wrapper bg-dark text-white">
+                                            <i class="bi bi-play-circle-fill"></i>
+                                        </div>
+                                        <div class="anexo-thumb-overlay">
+                                            <i class="bi bi-play-fill"></i>
+                                        </div>
+                                    </div>
+                                }
+                                else if (anexo.TipoMime == "application/pdf")
+                                {
+                                    <!-- Miniatura clicável para PDF -->
+                                    <div class="anexo-thumb-wrapper anexo-thumb-pdf" onclick="abrirLightbox('@downloadUrl', '@anexo.NomeArquivo', 'pdf')" title="Clique para visualizar">
+                                        <div class="anexo-file-icon-wrapper bg-light text-danger">
+                                            <i class="bi bi-file-earmark-pdf-fill"></i>
+                                        </div>
+                                        <div class="anexo-thumb-overlay">
+                                            <i class="bi bi-eye-fill"></i>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <!-- Ícone para arquivos Genéricos -->
+                                    <div class="anexo-file-icon-wrapper" onclick="window.open('@downloadUrl', '_blank')">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                    </div>
+                                }
+                                <!-- Nome + Tamanho + Botão Download -->
+                                <div class="anexo-gallery-info">
+                                    <span class="anexo-gallery-name" title="@anexo.NomeArquivo">@anexo.NomeArquivo</span>
+                                    <span class="anexo-gallery-size">@(Math.Round((double)anexo.TamanhoBytes / 1024, 1)) KB</span>
+                                    <a href="@downloadUrl"
+                                       class="btn btn-xs btn-outline-primary mt-1"
+                                       download="@anexo.NomeArquivo"
+                                       title="Baixar arquivo">
+                                        <i class="bi bi-download me-1"></i>Download
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Nenhum anexo -->
+                <div class="modal-info-section">
+                    <h6 class="modal-section-title">
+                        <i class="bi bi-paperclip"></i>
+                        Anexos
+                    </h6>
+                    <div class="text-center py-2 text-muted small">
+                        <i class="bi bi-file-earmark-x me-1"></i>Nenhum anexo nesta ordem
+                    </div>
+                </div>
+            }
+                
+            <!-- Seção de Observações - compacta -->
+            @if (!string.IsNullOrEmpty(Model.Observacoes))
+            {
+                <div class="modal-info-section">
+                    <h6 class="modal-section-title">
+                        <i class="bi bi-chat-square-text"></i>
+                        Observações
+                    </h6>
+                    <div class="modal-description-area">
+                        <div class="modal-description-text">@Model.Observacoes</div>
+                    </div>
+                </div>
+            }
+            
+            <!-- Seção do Chat - compacta -->
+            <div class="modal-chat-section text-center py-1 mt-1">
+                <i class="bi bi-chat-dots text-primary mb-1"></i>
+                <h6 class="mb-1" style="font-size: 0.85rem;">Comunicação da Ordem</h6>
+                <p class="text-muted mb-2 small" style="font-size: 0.75rem;">Para mensagens sobre esta ordem:</p>
+                <a href="@Url.Action("Chat", "Mensagem", new { id = Model.Id })" 
+                   class="modal-chat-btn">
+                    <i class="bi bi-chat-dots me-2"></i>
+                    Abrir Chat
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- LIGHTBOX para visualização de imagens em tela cheia -->
+<!-- ============================================================ -->
+<div id="anexoLightbox" class="anexo-lightbox-overlay" onclick="fecharLightbox()" style="display:none;">
+    <div class="anexo-lightbox-container" onclick="event.stopPropagation()">
+        <!-- Header do lightbox -->
+        <div class="anexo-lightbox-header">
+            <span id="anexoLightboxNome" class="anexo-lightbox-title"></span>
+            <div class="d-flex align-items-center gap-2">
+                <a id="anexoLightboxDownload" href="#" class="btn btn-sm btn-outline-light" download title="Baixar imagem">
+                    <i class="bi bi-download me-1"></i>Baixar
+                </a>
+                <button type="button" class="btn btn-sm btn-outline-light" onclick="fecharLightbox()" title="Fechar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Conteúdo dinâmico do lightbox -->
+        <div class="anexo-lightbox-body">
+            <img id="anexoLightboxImg" src="" alt="" class="anexo-lightbox-img" style="display:none;" />
+            <div id="anexoLightboxVideoContainer" style="display:none; width: 100%;">
+                <video id="anexoLightboxVideo" controls style="max-width: 100%; max-height: calc(90vh - 100px); border-radius: 8px;">
+                    <source src="" type="">
+                    Seu navegador não suporta vídeos.
+                </video>
+            </div>
+            <div id="anexoLightboxPdfContainer" style="display:none; width: 100%; height: calc(90vh - 100px);">
+                <iframe id="anexoLightboxPdf" src="" style="width: 100%; height: 100%; border: none; border-radius: 8px;"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ============================================================
+   ESTILOS COMPACTOS - MODAL DE DETALHES
+   ============================================================ */
+
+/* Seções e Títulos */
+.modal-info-section {
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid #f1f3f5;
+}
+.modal-info-section:last-child {
+    border-bottom: none;
+}
+.modal-section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #adb5bd;
+    margin-bottom: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Grid de Informações */
+.modal-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+.modal-info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #f1f3f5;
+    transition: all 0.2s ease;
+}
+.modal-info-item:hover {
+    border-color: #dee2e6;
+    background: #f8f9fa;
+}
+.modal-info-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f3f5;
+    border-radius: 8px;
+    color: #0d6efd;
+    font-size: 0.9rem;
+}
+.modal-info-content {
+    flex: 1;
+}
+.modal-info-label {
+    font-size: 0.6rem;
+    color: #adb5bd;
+    text-transform: uppercase;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+.modal-info-value {
+    font-size: 0.82rem;
+    color: #343a40;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+/* Descrição e Observações */
+.modal-description-area {
+    background: #fff;
+    border: 1px solid #f1f3f5;
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+.modal-description-text {
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: #495057;
+    white-space: pre-wrap;
+}
+
+/* Badges Customizados */
+.modal-badge {
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.modal-badge-alta { background: #fff5f5; color: #fa5252; border: 1px solid #ffe3e3; }
+.modal-badge-media { background: #fff9db; color: #f08c00; border: 1px solid #fff3bf; }
+.modal-badge-baixa { background: #ebfbee; color: #40c057; border: 1px solid #d3f9d8; }
+.modal-badge-aberta { background: #fff9db; color: #f08c00; border: 1px solid #fff3bf; }
+.modal-badge-andamento { background: #e7f5ff; color: #228be6; border: 1px solid #d0ebff; }
+.modal-badge-concluida { background: #ebfbee; color: #40c057; border: 1px solid #d3f9d8; }
+.modal-badge-setor { background: #f8f9fa; color: #495057; border: 1px solid #e9ecef; }
+
+/* Cabeçalho do Card */
+.modal-card-header {
+    background: linear-gradient(to right, #f8f9fa, #fff);
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid #f1f3f5;
+}
+.modal-card-title {
+    color: #212529;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+/* Chat Button */
+.modal-chat-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 20px;
+    background: #0d6efd;
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: none;
+    box-shadow: 0 4px 6px rgba(13,110,253,0.15);
+}
+.modal-chat-btn:hover {
+    background: #0b5ed7;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(13,110,253,0.2);
+}
+
+/* ============================================================
+/* ============================================================
+   GALERIA DE ANEXOS - MODAL DE DETALHES
+   ============================================================ */
+
+/* Grade de miniaturas */
+.anexo-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+    padding: 4px 0;
+}
+
+/* Item da galeria */
+.anexo-gallery-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 8px;
+    transition: box-shadow 0.2s, transform 0.2s;
+    text-align: center;
+}
+.anexo-gallery-item:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+    transform: translateY(-2px);
+}
+
+/* Wrapper da miniatura com overlay de zoom */
+.anexo-thumb-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    cursor: zoom-in;
+    border-radius: 7px;
+    overflow: hidden;
+    background: #dee2e6;
+    margin-bottom: 6px;
+}
+.anexo-thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.25s;
+}
+.anexo-thumb-wrapper:hover .anexo-thumb-img {
+    transform: scale(1.07);
+}
+.anexo-thumb-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    font-size: 1.7rem;
+    color: #fff;
+}
+.anexo-thumb-wrapper:hover .anexo-thumb-overlay {
+    opacity: 1;
+}
+
+/* Ícone para arquivos não-imagem */
+.anexo-file-icon-wrapper {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: #e9ecef;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: #6c757d;
+    margin-bottom: 6px;
+}
+
+/* Info do anexo (nome + tamanho + botão) */
+.anexo-gallery-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 2px;
+}
+.anexo-gallery-name {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #343a40;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+.anexo-gallery-size {
+    font-size: 0.65rem;
+    color: #6c757d;
+}
+
+/* ============================================================
+   LIGHTBOX
+   ============================================================ */
+.anexo-lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,15,0.88);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: lightboxFadeIn 0.2s ease;
+    backdrop-filter: blur(4px);
+}
+@@keyframes lightboxFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+.anexo-lightbox-container {
+    background: #1a1a2e;
+    border-radius: 14px;
+    overflow: hidden;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+    animation: lightboxSlideIn 0.25s ease;
+}
+@@keyframes lightboxSlideIn {
+    from { transform: scale(0.92); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+}
+.anexo-lightbox-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    min-height: 48px;
+}
+.anexo-lightbox-title {
+    color: #ffffffcc;
+    font-size: 0.85rem;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 55vw;
+}
+.anexo-lightbox-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow: auto;
+    max-height: calc(90vh - 64px);
+}
+.anexo-lightbox-img {
+    max-width: 100%;
+    max-height: calc(90vh - 100px);
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+</style>
+
+<!-- Script para adicionar efeito de fade-in -->
+<script>
+    // Adicionar efeito de fade-in ao modal
+    document.addEventListener('DOMContentLoaded', function() {
+        const modalContainer = document.querySelector('.modal-details-container');
+        if (modalContainer) {
+            modalContainer.style.opacity = '0';
+            modalContainer.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                modalContainer.style.transition = 'all 0.5s ease-in-out';
+                modalContainer.style.opacity = '1';
+                modalContainer.style.transform = 'translateY(0)';
+            }, 100);
+        }
+    });
+
+    // Abre o lightbox com o anexo ampliado
+    function abrirLightbox(url, nome, tipo, mimeType) {
+        const overlay             = document.getElementById('anexoLightbox');
+        const img                 = document.getElementById('anexoLightboxImg');
+        const videoContainer      = document.getElementById('anexoLightboxVideoContainer');
+        const video               = document.getElementById('anexoLightboxVideo');
+        const pdfContainer        = document.getElementById('anexoLightboxPdfContainer');
+        const pdf                 = document.getElementById('anexoLightboxPdf');
+        const title               = document.getElementById('anexoLightboxNome');
+        const download            = document.getElementById('anexoLightboxDownload');
+
+        // Reset
+        img.style.display = 'none';
+        videoContainer.style.display = 'none';
+        pdfContainer.style.display = 'none';
+        video.pause();
+        video.src = '';
+
+        if (tipo === 'image') {
+            img.src = url;
+            img.style.display = 'block';
+        } else if (tipo === 'video') {
+            video.src = url;
+            const source = video.querySelector('source');
+            if (source) source.type = mimeType || 'video/mp4';
+            videoContainer.style.display = 'block';
+            video.load();
+        } else if (tipo === 'pdf') {
+            pdf.src = url;
+            pdfContainer.style.display = 'block';
+        }
+
+        title.textContent = nome;
+        download.href     = url;
+        download.setAttribute('download', nome);
+
+        overlay.style.display = 'flex';
+
+        // Fecha ao pressionar ESC
+        document.addEventListener('keydown', _lightboxEscHandler);
+    }
+
+    // Fecha o lightbox
+    function fecharLightbox() {
+        const overlay = document.getElementById('anexoLightbox');
+        overlay.style.display = 'none';
+        
+        // Limpar fontes para liberar memória/parar áudio
+        const video = document.getElementById('anexoLightboxVideo');
+        video.pause();
+        video.src = '';
+        
+        const pdf = document.getElementById('anexoLightboxPdf');
+        pdf.src = '';
+        
+        document.getElementById('anexoLightboxImg').src = '';
+        document.removeEventListener('keydown', _lightboxEscHandler);
+    }
+
+    // Handler ESC para fechar
+    function _lightboxEscHandler(e) {
+        if (e.key === 'Escape') fecharLightbox();
+    }
+</script>

@@ -1,0 +1,71 @@
+@model OrdemServicoMVC.ViewModels.UserViewModel
+@{
+    ViewData["Title"] = "Excluir Usuário";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-person-x me-2"></i>
+                    Excluir Usuário
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Atenção!</strong> Esta ação não pode ser desfeita.
+                </div>
+                
+                <p>Tem certeza que deseja excluir este usuário?</p>
+                
+                <div class="row">
+                    <div class="col-sm-4"><strong>Nome de Usuário:</strong></div>
+                    <div class="col-sm-8">@Model.UserName</div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4"><strong>E-mail:</strong></div>
+                    <div class="col-sm-8">@Model.Email</div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4"><strong>Nome da Loja:</strong></div>
+                    <div class="col-sm-8">@Model.NomeLoja</div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4"><strong>Tipo:</strong></div>
+                    <div class="col-sm-8">
+                        @if (Model.IsAdmin)
+                        {
+                            <span class="badge bg-danger">Administrador</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-primary">Usuário</span>
+                        }
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4"><strong>Data de Criação:</strong></div>
+                    <div class="col-sm-8">@Model.DataCriacao.ToString("dd/MM/yyyy às HH:mm")</div>
+                </div>
+                
+                <hr />
+                
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-2"></i>
+                            Confirmar Exclusão
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

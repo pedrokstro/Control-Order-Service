@@ -1,0 +1,26 @@
+@* Scripts de validação carregados sob demanda via ValidationLoader *@
+<script>
+    // Carrega scripts de validação apenas quando necessário
+    if (typeof validationLoader !== 'undefined') {
+        // Se ValidationLoader está disponível, usa lazy loading
+        validationLoader.autoInitializeValidation();
+    } else {
+        // Fallback: carrega scripts tradicionais se ValidationLoader não estiver disponível
+        console.warn('ValidationLoader não disponível, carregando scripts tradicionais...');
+        
+        // Carrega jQuery Validation
+        var validationScript = document.createElement('script');
+        validationScript.src = '@Url.Content("~/lib/jquery-validation/dist/jquery.validate.min.js")';
+        validationScript.async = true;
+        
+        validationScript.onload = function() {
+            // Carrega jQuery Validation Unobtrusive após jQuery Validation
+            var unobtrusiveScript = document.createElement('script');
+            unobtrusiveScript.src = '@Url.Content("~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js")';
+            unobtrusiveScript.async = true;
+            document.head.appendChild(unobtrusiveScript);
+        };
+        
+        document.head.appendChild(validationScript);
+    }
+</script>

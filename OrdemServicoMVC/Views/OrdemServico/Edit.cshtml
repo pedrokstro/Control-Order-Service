@@ -1,0 +1,505 @@
+@model OrdemServicoMVC.ViewModels.OrdemServicoEditViewModel
+@{
+    ViewData["Title"] = "Editar Ordem de Serviço";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-pencil-square me-2"></i>
+        Editar Ordem #@Model.Id
+    </h2>
+    <div>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info me-2">
+            <i class="bi bi-eye me-2"></i>
+            Visualizar
+        </a>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-2"></i>
+            Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-file-earmark-text me-2"></i>
+                    Informações da Ordem
+                </h5>
+            </div>
+            <div class="card-body" style="padding: 10px;">
+                <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                    <input asp-for="Id" type="hidden" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    
+                    <!-- Informações Básicas -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-muted border-bottom pb-2 mb-3">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Informações Básicas
+                            </h6>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label asp-for="Titulo" class="form-label fw-bold">
+                                    <i class="bi bi-card-text me-1"></i>
+                                    Título *
+                                </label>
+                                <input asp-for="Titulo" class="form-control form-control-lg" placeholder="Digite o título da ordem de serviço">
+                                <span asp-validation-for="Titulo" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label asp-for="Descricao" class="form-label fw-bold">
+                                    <i class="bi bi-file-text me-1"></i>
+                                    Descrição *
+                                </label>
+                                <textarea asp-for="Descricao" class="form-control" rows="4" placeholder="Descreva detalhadamente o problema ou serviço solicitado"></textarea>
+                                <span asp-validation-for="Descricao" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status, Prioridade e Setor -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-muted border-bottom pb-2 mb-3">
+                                <i class="bi bi-gear me-1"></i>
+                                Status, Prioridade e Setor
+                            </h6>
+                        </div>
+                        <!-- Prioridade -->
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Prioridade" class="form-label fw-bold">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    Prioridade *
+                                </label>
+                                <select asp-for="Prioridade" class="form-select form-select-lg" asp-items="Html.GetEnumSelectList<OrdemServicoMVC.Models.PrioridadeEnum>()">
+                                    <option value="">-- Selecione a prioridade --</option>
+                                </select>
+                                <span asp-validation-for="Prioridade" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <!-- Setor -->
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Setor" class="form-label fw-bold">
+                                    <i class="bi bi-building me-1"></i>
+                                    Setor *
+                                </label>
+                                <select asp-for="Setor" class="form-select form-select-lg" asp-items="Html.GetEnumSelectList<OrdemServicoMVC.Models.SetorEnum>()">
+                                    <option value="">-- Selecione o setor --</option>
+                                </select>
+                                <span asp-validation-for="Setor" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <!-- Status -->
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Status" class="form-label fw-bold">
+                                    <i class="bi bi-flag me-1"></i>
+                                    Status *
+                                </label>
+                                <select asp-for="Status" class="form-select form-select-lg" asp-items="Html.GetEnumSelectList<OrdemServicoMVC.Models.StatusEnum>()">
+                                    <option value="">-- Selecione o status --</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <!-- Atribuição -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted border-bottom pb-2 mb-3">
+                                    <i class="bi bi-person-gear me-1"></i>
+                                    Atribuição
+                                </h6>
+                            </div>
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label asp-for="TecnicoResponsavelId" class="form-label fw-bold">
+                                        <i class="bi bi-person-gear me-1"></i>
+                                        Técnico Responsável
+                                    </label>
+                                    <select asp-for="TecnicoResponsavelId" class="form-select form-select-lg" asp-items="@(new SelectList(Model.Tecnicos, "Value", "Text"))">
+                                        <option value="">-- Selecione um técnico --</option>
+                                    </select>
+                                    <span asp-validation-for="TecnicoResponsavelId" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Anexos -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-muted border-bottom pb-2 mb-3">
+                                <i class="bi bi-paperclip me-1"></i>
+                                Novos Anexos e Evidências
+                            </h6>
+                        </div>
+                        <div class="col-12">
+                            <div class="order-upload-area p-4 border-2 border-dashed rounded text-center mb-3" id="uploadArea" style="border-style: dashed; background: #f8f9fa; cursor: pointer;">
+                                <input type="file" id="imageUpload" name="anexos" multiple accept="image/*,video/mp4,video/webm,video/quicktime,application/pdf" class="d-none" />
+                                <div class="py-3">
+                                    <i class="bi bi-cloud-upload text-primary mb-2" style="font-size:2.5rem;"></i>
+                                    <p class="text-dark fw-bold mb-1">Clique para adicionar novos arquivos</p>
+                                    <p class="text-muted small mb-0">Imagens, Vídeos ou PDFs - Até 20MB</p>
+                                </div>
+                                <div id="imagePreview" class="mt-3 d-flex flex-wrap gap-2 justify-content-center"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Observações -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-muted border-bottom pb-2 mb-3">
+                                <i class="bi bi-chat-left-text me-1"></i>
+                                Observações Adicionais
+                            </h6>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label asp-for="Observacoes" class="form-label fw-bold">
+                                    <i class="bi bi-chat-left-text me-1"></i>
+                                    Observações
+                                </label>
+                                <textarea asp-for="Observacoes" class="form-control" rows="3" placeholder="Observações adicionais (opcional)"></textarea>
+                                <span asp-validation-for="Observacoes" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end pt-3 border-top">
+                        <a asp-action="Index" class="btn btn-outline-secondary btn-lg me-md-2">
+                            <i class="bi bi-x-circle me-2"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Informações da Ordem -->
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-info text-white">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Informações da Ordem
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-borderless mb-0">
+                        <tbody>
+                            <tr>
+                                <td class="text-muted fw-bold">ID:</td>
+                                <td>#@Model.Id</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted fw-bold">Criado em:</td>
+                                <td>@Model.DataCriacao.ToString("dd/MM/yyyy 'às' HH:mm")</td>
+                            </tr>
+                            @if (Model.DataConclusao.HasValue)
+                            {
+                                <tr>
+                                    <td class="text-muted fw-bold">Concluído em:</td>
+                                    <td>@Model.DataConclusao.Value.ToString("dd/MM/yyyy 'às' HH:mm")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Guia de Status -->
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-flag me-2"></i>
+                    Guia de Status
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-borderless mb-0">
+                        <tbody>
+                            <tr>
+                                <td><span class="badge badge-status-aberta">Aberta</span></td>
+                                <td class="text-muted small">Aguardando atendimento</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-status-andamento">Em Andamento</span></td>
+                                <td class="text-muted small">Sendo executada</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-status-concluida">Concluída</span></td>
+                                <td class="text-muted small">Finalizada</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Guia de Prioridades -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-success text-white">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Guia de Prioridades
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-borderless mb-0">
+                        <tbody>
+                            <tr>
+                                <td><span class="badge badge-prioridade-alta">Alta</span></td>
+                                <td class="text-muted small">Urgente, requer atenção imediata</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-prioridade-media">Média</span></td>
+                                <td class="text-muted small">Importante, mas não urgente</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-prioridade-baixa">Baixa</span></td>
+                                <td class="text-muted small">Pode aguardar</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusSelect = document.getElementById('Status');
+            const prioridadeSelect = document.getElementById('Prioridade');
+            const card = document.querySelector('.card');
+            
+            // Upload / Preview de novos anexos
+            const uploadArea = document.getElementById('uploadArea');
+            const imageUpload = document.getElementById('imageUpload');
+            const imagePreview = document.getElementById('imagePreview');
+
+            // Função para validar arquivo (tipo e tamanho)
+            function validarArquivo(file) {
+                const tiposPermitidos = [
+                    'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp',
+                    'video/mp4', 'video/webm', 'video/quicktime',
+                    'application/pdf'
+                ];
+                const tamanhoMaximo = 20 * 1024 * 1024; // 20MB
+
+                if (!tiposPermitidos.includes(file.type)) {
+                    if (window.BrutalistAnimations) {
+                        window.BrutalistAnimations.showToast(`Arquivo "${file.name}" não suportado. Use Imagens, Vídeos ou PDFs.`, 'danger');
+                    } else {
+                        alert(`Arquivo "${file.name}" não suportado. Use Imagens, Vídeos ou PDFs.`);
+                    }
+                    return false;
+                }
+
+                if (file.size > tamanhoMaximo) {
+                    if (window.BrutalistAnimations) {
+                        window.BrutalistAnimations.showToast(`Arquivo "${file.name}" excede o limite de 20MB.`, 'danger');
+                    } else {
+                        alert(`Arquivo "${file.name}" muito grande (máx 20MB).`);
+                    }
+                    return false;
+                }
+
+                return true;
+            }
+
+            uploadArea.addEventListener('click', () => imageUpload.click());
+
+            imageUpload.addEventListener('change', function(e) {
+                const allFiles = Array.from(e.target.files);
+                showLoading('Processando Anexos...', `Preparando ${allFiles.length} arquivo(s).`);
+
+                if (allFiles.length === 0) {
+                    imagePreview.innerHTML = '';
+                    hideLoading();
+                    return;
+                }
+
+                // Pequeno delay para permitir que o overlay apareça
+                setTimeout(async () => {
+                    imagePreview.innerHTML = '';
+                    const fragment = document.createDocumentFragment();
+                    
+                    // Bloqueio de duplicatas e validação
+                    const seenFiles = new Set();
+                    const validFiles = [];
+                    const totalFiles = allFiles.length;
+
+                    // Processamento assíncrono para permitir que o navegador atualize a barra de progresso
+                    for (let i = 0; i < totalFiles; i++) {
+                        const file = allFiles[i];
+                        const percentage = ((i + 1) / totalFiles) * 100;
+                        updateLoadingProgress(percentage);
+
+                        const fileKey = `${file.name}-${file.size}`;
+                        if (seenFiles.has(fileKey)) {
+                            if (window.BrutalistAnimations) {
+                                window.BrutalistAnimations.showToast(`Arquivo "${file.name}" já selecionado.`, 'warning');
+                            }
+                        } else if (validarArquivo(file)) {
+                            seenFiles.add(fileKey);
+                            validFiles.push(file);
+
+                            const previewDiv = document.createElement('div');
+                            previewDiv.className = 'position-relative';
+                            
+                            let previewContent = '';
+                            if (file.type.startsWith('image/')) {
+                                const objectUrl = URL.createObjectURL(file);
+                                previewContent = `<img src="${objectUrl}" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" onload="URL.revokeObjectURL(this.src)">`;
+                            } else if (file.type.startsWith('video/')) {
+                                previewContent = `
+                                    <div class="img-thumbnail d-flex flex-column align-items-center justify-content-center bg-dark text-white text-center" style="width: 100px; height: 100px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                        <i class="bi bi-play-btn-fill" style="font-size: 1.5rem;"></i>
+                                        <span style="font-size: 0.6rem; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">VÍDEO</span>
+                                    </div>`;
+                            } else if (file.type === 'application/pdf') {
+                                previewContent = `
+                                    <div class="img-thumbnail d-flex flex-column align-items-center justify-content-center bg-light text-danger text-center" style="width: 100px; height: 100px; border-radius: 8px; border: 1px solid #dee2e6; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                        <i class="bi bi-file-earmark-pdf-fill" style="font-size: 1.5rem;"></i>
+                                        <span style="font-size: 0.6rem;">PDF</span>
+                                    </div>`;
+                            } else {
+                                previewContent = `
+                                    <div class="img-thumbnail d-flex flex-column align-items-center justify-content-center bg-light text-secondary text-center" style="width: 100px; height: 100px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                        <i class="bi bi-file-earmark-fill" style="font-size: 1.5rem;"></i>
+                                        <span style="font-size: 0.6rem;">ARQUIVO</span>
+                                    </div>`;
+                            }
+
+                            previewDiv.innerHTML = `
+                                ${previewContent}
+                                <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded-circle" style="width: 25px; height: 25px; padding: 0; margin: -5px;" onclick="removeImage(${validFiles.length - 1}); event.stopPropagation();">
+                                    <i class="bi bi-x" style="font-size: 0.8rem;"></i>
+                                </button>
+                            `;
+                            fragment.appendChild(previewDiv);
+                        }
+
+                        // Pausa mínima para permitir redenrização da interface (apenas se houver muitos arquivos)
+                        if (totalFiles > 10 && i % 5 === 0) {
+                            await new Promise(resolve => setTimeout(resolve, 0));
+                        }
+                    }
+
+                    imagePreview.appendChild(fragment);
+
+                    // Atualiza o input com apenas arquivos válidos e não duplicados
+                    const dataTransfer = new DataTransfer();
+                    validFiles.forEach(file => dataTransfer.items.add(file));
+                    imageUpload.files = dataTransfer.files;
+
+                    setTimeout(hideLoading, 500);
+                }, 100);
+            });
+
+            // Função para remover imagem do preview
+            window.removeImage = function(index) {
+                const dt = new DataTransfer();
+                const files = Array.from(imageUpload.files);
+                
+                files.forEach((file, i) => {
+                    if (i !== index) {
+                        dt.items.add(file);
+                    }
+                });
+                
+                imageUpload.files = dt.files;
+                imageUpload.dispatchEvent(new Event('change'));
+            };
+
+            // Drag and drop
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--bs-primary)';
+                uploadArea.style.background = '#eef';
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = '#dee2e6';
+                uploadArea.style.background = '#f8f9fa';
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#dee2e6';
+                uploadArea.style.background = '#f8f9fa';
+                imageUpload.files = e.dataTransfer.files;
+                imageUpload.dispatchEvent(new Event('change'));
+            });
+
+            // Função para atualizar a borda do card baseado na prioridade
+            function updateCardBorder() {
+                card.classList.remove('border-danger', 'border-warning', 'border-success');
+                
+                switch(prioridadeSelect.value) {
+                    case '2': // Alta
+                        card.classList.add('border-danger');
+                        break;
+                    case '1': // Média
+                        card.classList.add('border-warning');
+                        break;
+                    case '0': // Baixa
+                        card.classList.add('border-success');
+                        break;
+                }
+            }
+            
+            // Aplicar estilo inicial
+            updateCardBorder();
+            
+            // Atualizar quando a prioridade mudar
+            prioridadeSelect.addEventListener('change', updateCardBorder);
+            
+            // Validar se o status está sendo alterado para concluído
+            statusSelect.addEventListener('change', function() {
+                if (this.value === '3') { // Concluída (StatusEnum.Concluida = 3)
+                    const tecnicoSelect = document.getElementById('TecnicoResponsavelId');
+                    
+                    // Verifica se há técnico atribuído
+                    if (!tecnicoSelect.value || tecnicoSelect.value === '') {
+                        alert('Não é possível marcar a ordem como concluída sem atribuir um técnico responsável.');
+                        // Reverter para o valor anterior
+                        this.selectedIndex = 0;
+                        return;
+                    }
+                    
+                    // Confirmar se o usuário realmente quer marcar como concluída
+                    if (!confirm('Tem certeza que deseja marcar esta ordem como concluída?')) {
+                        // Reverter para o valor anterior se cancelar
+                        this.selectedIndex = 0;
+                    }
+                }
+            });
+        });
+    </script>
+}

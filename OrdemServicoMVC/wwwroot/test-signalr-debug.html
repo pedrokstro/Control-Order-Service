@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Debug SignalR</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f9f9f9;
+        }
+        .status-success { border-left: 4px solid #28a745; }
+        .status-error { border-left: 4px solid #dc3545; }
+        .status-warning { border-left: 4px solid #ffc107; }
+        .status-info { border-left: 4px solid #17a2b8; }
+        .log-container {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Teste de Debug SignalR - COS</h1>
+        <p>Esta página testa as correções aplicadas ao sistema SignalR.</p>
+
+        <!-- Status do SignalR Manager -->
+        <div class="status-card status-info" id="signalr-manager-status">
+            <h3>📡 SignalR Manager</h3>
+            <p id="signalr-manager-text">Carregando...</p>
+        </div>
+
+        <!-- Status da Conexão Global -->
+        <div class="status-card status-info" id="global-connection-status">
+            <h3>🌐 Conexão Global</h3>
+            <p id="global-connection-text">Aguardando...</p>
+        </div>
+
+        <!-- Status do Chat Modal -->
+        <div class="status-card status-info" id="chat-modal-status">
+            <h3>💬 Chat Modal</h3>
+            <p id="chat-modal-text">Aguardando...</p>
+        </div>
+
+        <!-- Testes Manuais -->
+        <div class="status-card status-warning">
+            <h3>🧪 Testes Manuais</h3>
+            <button class="test-button" onclick="testGlobalConnection()">Testar Conexão Global</button>
+            <button class="test-button" onclick="testChatConnection()">Testar Chat</button>
+            <button class="test-button" onclick="clearLogs()">Limpar Logs</button>
+        </div>
+
+        <!-- Console de Logs -->
+        <div class="status-card">
+            <h3>📋 Console de Logs</h3>
+            <div class="log-container" id="log-container">
+                <div>Aguardando logs...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts necessários -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="/js/lazy-loader.js"></script>
+
+    <script>
+        // Intercepta logs do console
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        const logContainer = document.getElementById('log-container');
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.style.color = type === 'error' ? '#ff6b6b' : 
+                                  type === 'warn' ? '#ffd93d' : 
+                                  type === 'success' ? '#6bcf7f' : '#00ff00';
+            logEntry.textContent = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Sobrescreve métodos do console
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog(args.join(' '), 'info');
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog(args.join(' '), 'error');
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addLog(args.join(' '), 'warn');
+        };
+
+        // Função para atualizar status
+        function updateStatus(elementId, text, statusClass) {
+            const element = document.getElementById(elementId);
+            const textElement = document.getElementById(elementId.replace('-status', '-text'));
+            
+            element.className = `status-card ${statusClass}`;
+            textElement.textContent = text;
+        }
+
+        // Função para limpar logs
+        function clearLogs() {
+            logContainer.innerHTML = '<div>Logs limpos...</div>';
+        }
+
+        // Testa conexão global
+        async function testGlobalConnection() {
+            try {
+                addLog('Testando conexão global...', 'info');
+                
+                if (window.signalRManager) {
+                    const connection = await window.signalRManager.getGlobalConnection();
+                    addLog(`Conexão global obtida: ${connection.state}`, 'success');
+                    updateStatus('global-connection-status', `Conectado: ${connection.state}`, 'status-success');
+                } else {
+                    addLog('SignalR Manager não encontrado', 'error');
+                    updateStatus('global-connection-status', 'SignalR Manager não encontrado', 'status-error');
+                }
+            } catch (error) {
+                addLog(`Erro na conexão global: ${error.message}`, 'error');
+                updateStatus('global-connection-status', `Erro: ${error.message}`, 'status-error');
+            }
+        }
+
+        // Testa conexão do chat
+        async function testChatConnection() {
+            try {
+                addLog('Testando conexão do chat...', 'info');
+                
+                const connection = new signalR.HubConnectionBuilder()
+                    .withUrl('/mensagemHub')
+                    .withAutomaticReconnect()
+                    .build();
+
+                await connection.start();
+                addLog(`Chat conectado: ${connection.state}`, 'success');
+                updateStatus('chat-modal-status', `Conectado: ${connection.state}`, 'status-success');
+                
+                // Desconecta após o teste
+                await connection.stop();
+                addLog('Chat desconectado após teste', 'info');
+                
+            } catch (error) {
+                addLog(`Erro na conexão do chat: ${error.message}`, 'error');
+                updateStatus('chat-modal-status', `Erro: ${error.message}`, 'status-error');
+            }
+        }
+
+        // Inicialização da página
+        document.addEventListener('DOMContentLoaded', async function() {
+            addLog('Página carregada, iniciando testes...', 'info');
+            
+            // Aguarda o carregamento do lazy loader
+            setTimeout(async () => {
+                try {
+                    // Testa SignalR Manager
+                    if (window.lazyLoader) {
+                        addLog('Lazy Loader encontrado, carregando SignalR Manager...', 'info');
+                        await window.lazyLoader.loadScript('/js/components/signalr-manager.js', 'signalr-manager');
+                        
+                        if (window.signalRManager) {
+                            addLog('SignalR Manager carregado com sucesso!', 'success');
+                            updateStatus('signalr-manager-status', 'Carregado com sucesso', 'status-success');
+                            
+                            // Testa conexão global automaticamente
+                            await testGlobalConnection();
+                        } else {
+                            addLog('SignalR Manager não foi inicializado', 'error');
+                            updateStatus('signalr-manager-status', 'Não inicializado', 'status-error');
+                        }
+                    } else {
+                        addLog('Lazy Loader não encontrado', 'error');
+                        updateStatus('signalr-manager-status', 'Lazy Loader não encontrado', 'status-error');
+                    }
+                } catch (error) {
+                    addLog(`Erro na inicialização: ${error.message}`, 'error');
+                    updateStatus('signalr-manager-status', `Erro: ${error.message}`, 'status-error');
+                }
+            }, 1000);
+        });
+
+        // Intercepta erros não tratados
+        window.addEventListener('error', function(event) {
+            addLog(`Erro não tratado: ${event.error?.message || event.message}`, 'error');
+        });
+
+        window.addEventListener('unhandledrejection', function(event) {
+            addLog(`Promise rejeitada: ${event.reason}`, 'error');
+        });
+    </script>
+</body>
+</html>

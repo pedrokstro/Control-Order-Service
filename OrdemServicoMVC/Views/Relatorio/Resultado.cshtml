@@ -1,0 +1,348 @@
+@model OrdemServicoMVC.ViewModels.RelatorioResultadoViewModel
+@{
+    ViewData["Title"] = "Resultado do Relatório";
+}
+
+<div class="container-fluid">
+    <!-- Cabeçalho com resumo -->
+    <div class="card mb-3">
+        <div class="card-header" style="padding-left: 10px; padding-right: 10px;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Resultado do Relatório
+                    </h4>
+                    <small class="text-muted">@Model.OrdensServico.Count ordens encontradas</small>
+                </div>
+                <div>
+                    <!-- Botões de ação -->
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Voltar aos Filtros
+                    </a>
+                    <div class="btn-group ms-2">
+                        <!-- Formulário para exportar Excel -->
+                        <form asp-action="Gerar" method="post" style="display: inline;">
+                            <!-- Preserva os filtros aplicados -->
+                            <input type="hidden" asp-for="Filtros.DataInicio" />
+                            <input type="hidden" asp-for="Filtros.DataFim" />
+                            <input type="hidden" asp-for="Filtros.TecnicoId" />
+                            <input type="hidden" asp-for="Filtros.Loja" />
+                            <input type="hidden" asp-for="Filtros.Status" />
+                            <input type="hidden" asp-for="Filtros.Prioridade" />
+                            <input type="hidden" name="TipoExportacao" value="excel" />
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-file-excel me-2"></i>
+                                Excel
+                            </button>
+                        </form>
+                        
+                        <!-- Formulário para exportar PDF -->
+                        <form asp-action="Gerar" method="post" style="display: inline;">
+                            <!-- Preserva os filtros aplicados -->
+                            <input type="hidden" asp-for="Filtros.DataInicio" />
+                            <input type="hidden" asp-for="Filtros.DataFim" />
+                            <input type="hidden" asp-for="Filtros.TecnicoId" />
+                            <input type="hidden" asp-for="Filtros.Loja" />
+                            <input type="hidden" asp-for="Filtros.Status" />
+                            <input type="hidden" asp-for="Filtros.Prioridade" />
+                            <input type="hidden" name="TipoExportacao" value="pdf" />
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-file-pdf me-2"></i>
+                                PDF
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filtros aplicados -->
+    @if (Model.Filtros.DataInicio.HasValue || Model.Filtros.DataFim.HasValue || 
+         !string.IsNullOrEmpty(Model.Filtros.TecnicoId) || !string.IsNullOrEmpty(Model.Filtros.Loja) ||
+         Model.Filtros.Status.HasValue || Model.Filtros.Prioridade.HasValue)
+    {
+        <div class="alert alert-info">
+            <!-- Título dos filtros aplicados com cor preta para melhor visibilidade -->
+            <h6 class="text-dark"><i class="fas fa-filter me-2"></i>Filtros aplicados:</h6>
+            <div class="row">
+                @if (Model.Filtros.DataInicio.HasValue)
+                {
+                    <div class="col-auto">
+                        <span class="badge bg-primary">Data Inicial: @Model.Filtros.DataInicio.Value.ToString("dd/MM/yyyy")</span>
+                    </div>
+                }
+                @if (Model.Filtros.DataFim.HasValue)
+                {
+                    <div class="col-auto">
+                        <span class="badge bg-primary">Data Final: @Model.Filtros.DataFim.Value.ToString("dd/MM/yyyy")</span>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.Filtros.TecnicoId))
+                {
+                    <div class="col-auto">
+                        <span class="badge bg-success">Técnico: @(Model.Filtros.TecnicoId == "sem_tecnico" ? "Sem técnico" : Model.Filtros.TecnicoId)</span>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.Filtros.Loja))
+                {
+                    <div class="col-auto">
+                        <span class="badge bg-warning text-dark">Loja: @Model.Filtros.Loja</span>
+                    </div>
+                }
+                @if (Model.Filtros.Status.HasValue)
+                {
+                    <div class="col-auto">
+                        <span class="badge bg-info">Status: @((OrdemServicoMVC.Models.StatusEnum)Model.Filtros.Status.Value)</span>
+                    </div>
+                }
+                @if (Model.Filtros.Prioridade.HasValue)
+                {
+                    <div class="col-auto">
+                        <span class="badge bg-danger">Prioridade: @((OrdemServicoMVC.Models.PrioridadeEnum)Model.Filtros.Prioridade.Value)</span>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    
+    <!-- Estatísticas do relatório -->
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <div class="card metric-card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@Model.Estatisticas.TotalOrdens</h4>
+                            <small>Total de Ordens</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clipboard-list fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card metric-card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@Model.Estatisticas.OrdensConcluidas</h4>
+                            <small>Concluídas</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card metric-card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@Model.Estatisticas.OrdensEmAndamento</h4>
+                            <small>Em Andamento</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card metric-card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@Model.Estatisticas.OrdensAbertas</h4>
+                            <small>Abertas</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-folder-open fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Estatísticas adicionais -->
+    <div class="row mb-3">
+        @if (Model.Estatisticas.TempoMedioConclusao.HasValue)
+        {
+            <div class="col-md-4">
+                <div class="card stats-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-stopwatch fa-2x mb-2 text-primary"></i>
+                        <h5 class="text-primary">@Model.Estatisticas.TempoMedioConclusao.Value dias</h5>
+                        <small class="text-muted">Tempo Médio de Conclusão</small>
+                    </div>
+                </div>
+            </div>
+        }
+        
+        @if (!string.IsNullOrEmpty(Model.Estatisticas.TecnicoMaisAtivo))
+        {
+            <div class="col-md-4">
+                <div class="card stats-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-user-cog fa-2x mb-2 text-success"></i>
+                        <!-- Nome do técnico com cor preta para melhor visibilidade -->
+                        <h6 class="text-success">@Model.Estatisticas.TecnicoMaisAtivo</h6>
+                        <small class="text-muted">Técnico Mais Ativo (@Model.Estatisticas.OrdensDoTecnicoMaisAtivo ordens)</small>
+                    </div>
+                </div>
+            </div>
+        }
+        
+        @if (!string.IsNullOrEmpty(Model.Estatisticas.LojaMaisAtiva))
+        {
+            <div class="col-md-4">
+                <div class="card stats-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-store fa-2x mb-2 text-info"></i>
+                        <!-- Nome da loja com cor preta para melhor visibilidade -->
+                        <h6 class="text-info">@Model.Estatisticas.LojaMaisAtiva</h6>
+                        <small class="text-muted">Loja Mais Ativa (@Model.Estatisticas.OrdensDaLojaMaisAtiva ordens)</small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    
+    <!-- Tabela de ordens -->
+    @if (Model.OrdensServico.Any())
+    {
+        <div class="card">
+            <div class="card-header" style="padding-left: 10px; padding-right: 10px;">
+                <h5 class="mb-0">
+                    <i class="fas fa-table me-2"></i>
+                    Detalhes das Ordens
+                </h5>
+            </div>
+            <div class="card-body" style="padding: 10px;">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Solicitante</th>
+                                <th>Status</th>
+                                <th>Prioridade</th>
+                                <th>Data Criação</th>
+                                <th>Loja</th>
+                                <th>Técnico</th>
+                                <th>Conclusão</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ordem in Model.OrdensServico)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>#@ordem.Id</strong>
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 200px;" title="@ordem.Titulo">
+                                            @ordem.Titulo
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @switch (ordem.Status)
+                                        {
+                                            case OrdemServicoMVC.Models.StatusEnum.Aberta:
+                                                <span class="badge bg-info">Aberta</span>
+                                                break;
+                                            case OrdemServicoMVC.Models.StatusEnum.EmAndamento:
+                                                <span class="badge bg-warning text-dark">Em Andamento</span>
+                                                break;
+                                            case OrdemServicoMVC.Models.StatusEnum.Concluida:
+                                                <span class="badge bg-success">Concluída</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        @switch (ordem.Prioridade)
+                                        {
+                                            case OrdemServicoMVC.Models.PrioridadeEnum.Alta:
+                                                <span class="badge bg-danger">Alta</span>
+                                                break;
+                                            case OrdemServicoMVC.Models.PrioridadeEnum.Media:
+                                                <span class="badge bg-warning text-dark">Média</span>
+                                                break;
+                                            case OrdemServicoMVC.Models.PrioridadeEnum.Baixa:
+                                                <span class="badge bg-secondary">Baixa</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        <small>@ordem.DataCriacao.ToString("dd/MM/yyyy às HH:mm")</small>
+                                    </td>
+                                    <td>
+                                        <small>@(ordem.UsuarioCriador?.NomeLoja ?? "N/A")</small>
+                                    </td>
+                                    <td>
+                                        @if (ordem.TecnicoResponsavel != null)
+                                        {
+                                            <small class="text-success">@ordem.TecnicoResponsavel.UserName</small>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">Não atribuído</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (ordem.DataConclusao.HasValue)
+                                        {
+                                            <small class="text-success">@ordem.DataConclusao.Value.ToString("dd/MM/yyyy às HH:mm")</small>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">-</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a href="@Url.Action("Details", "OrdemServico", new { id = ordem.Id })" 
+                                           class="btn btn-sm btn-outline-primary" title="Ver detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning text-center">
+            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+            <h5>Nenhuma ordem encontrada</h5>
+            <p>Não foram encontradas ordens de serviço com os filtros aplicados.</p>
+            <a href="@Url.Action("Index")" class="btn btn-primary">
+                <i class="fas fa-filter me-2"></i>
+                Ajustar Filtros
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Adiciona tooltips aos elementos truncados
+        $(document).ready(function() {
+            $('[title]').tooltip();
+        });
+    </script>
+}

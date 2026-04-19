@@ -1,0 +1,415 @@
+@model OrdemServicoMVC.ViewModels.OrdemServicoCreateViewModel
+@{
+    ViewData["Title"] = "Nova Ordem de Serviço";
+}
+
+<div class="container-fluid px-3 px-md-5 py-4 fadeIn">
+    <div class="order-form-wrapper">
+        <div class="order-form-card">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3">
+                <div>
+                    <p class="text-uppercase text-muted fw-semibold mb-1" style="letter-spacing: .2em;">NOVA ORDEM</p>
+                </div>
+            </div>
+
+            <form asp-action="Create" method="post" enctype="multipart/form-data" id="createForm" class="modern-form">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+                <section class="order-form-section">
+                    <p class="order-form-section__title">Identificação</p>
+                    <div class="order-form-group">
+                        <label asp-for="Titulo" class="form-label-modern">
+                            <i class="bi bi-person me-2"></i>Nome do Solicitante *
+                        </label>
+                        <input asp-for="Titulo" class="form-control-modern" placeholder="Digite quem está solicitando" />
+                        <span asp-validation-for="Titulo" class="text-danger"></span>
+                    </div>
+                    <div class="order-form-group">
+                        <label asp-for="Descricao" class="form-label-modern">
+                            <i class="bi bi-file-text me-2"></i>Descrição do Problema *
+                        </label>
+                        <textarea asp-for="Descricao" class="form-control-modern" rows="5" placeholder="Descreva o que está acontecendo, sintomas, local etc."></textarea>
+                        <span asp-validation-for="Descricao" class="text-danger"></span>
+                    </div>
+                </section>
+
+                <section class="order-form-section">
+                    <p class="order-form-section__title">Local / Setor</p>
+                    <div class="order-form-group">
+                        <label asp-for="Setor" class="form-label-modern">
+                            <i class="bi bi-building me-2"></i>Setor *
+                        </label>
+                        <select asp-for="Setor" class="form-select-modern" id="setorSelect">
+                            <option value="">Selecione o setor</option>
+                            <option value="@((int)OrdemServicoMVC.Models.SetorEnum.FrenteDeCaixa)">🛒 Frente de Caixa</option>
+                            <option value="@((int)OrdemServicoMVC.Models.SetorEnum.Financeiro)">💰 Financeiro</option>
+                            <option value="@((int)OrdemServicoMVC.Models.SetorEnum.Faturamento)">📄 Faturamento</option>
+                            <option value="@((int)OrdemServicoMVC.Models.SetorEnum.Administrativo)">🏢 Administrativo</option>
+                            <option value="@((int)OrdemServicoMVC.Models.SetorEnum.Rh)">👥 RH</option>
+                            <option value="@((int)OrdemServicoMVC.Models.SetorEnum.Prevencao)">🛡️ Prevenção</option>
+                            <option value="@((int)OrdemServicoMVC.Models.SetorEnum.Gerencia)">👔 Gerência</option>
+                            <option value="@((int)OrdemServicoMVC.Models.SetorEnum.Contabilidade)">📊 Contabilidade</option>
+                            <option value="@((int)OrdemServicoMVC.Models.SetorEnum.Patrimonio)">🏛️ Patrimônio</option>
+                            <option value="@((int)OrdemServicoMVC.Models.SetorEnum.Compras)">🛍️ Compras</option>
+                        </select>
+                        <span asp-validation-for="Setor" class="text-danger"></span>
+                    </div>
+                </section>
+
+                <section class="order-form-section">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <p class="order-form-section__title mb-0">Anexos e evidências</p>
+                        <!-- Ação rápida para Câmera no Mobile -->
+                        <button type="button" class="btn btn-sm btn-outline-primary d-lg-none" id="btnCaptureCamera" onclick="document.getElementById('cameraUpload').click()">
+                            <i class="bi bi-camera me-1"></i> Usar Câmera
+                        </button>
+                    </div>
+                    <div class="order-upload-area" id="uploadArea" role="button" tabindex="0" aria-label="Adicionar imagens">
+                        <input type="file" id="imageUpload" name="anexos" multiple accept="image/*,video/mp4,video/webm,video/quicktime,application/pdf" class="d-none" />
+                        <!-- Input exclusivo para Câmera -->
+                        <input type="file" id="cameraUpload" accept="image/*,video/*" capture="environment" class="d-none" />
+                        
+                        <div>
+                            <i class="bi bi-cloud-upload text-primary mb-2" style="font-size:2rem;"></i>
+                            <p class="text-muted mb-2">Arraste arquivos ou toque/click para selecionar.</p>
+                            <small class="text-muted">Imagens, Vídeos (MP4/WebM) ou PDF — até 20MB por arquivo.</small>
+                        </div>
+                        <div id="imagePreview" class="mt-3 d-flex flex-wrap gap-2 justify-content-center"></div>
+                    </div>
+                </section>
+
+                @if (User.IsInRole("Admin"))
+                {
+                    <section class="order-form-section">
+                        <p class="order-form-section__title">Orquestração</p>
+                        <div class="order-form-group">
+                            <label asp-for="TecnicoResponsavelId" class="form-label-modern">
+                                <i class="bi bi-person-gear me-2"></i>Técnico Responsável
+                            </label>
+                            <select asp-for="TecnicoResponsavelId" class="form-select-modern" id="inputTecnico">
+                                <option value="">Selecione o técnico responsável</option>
+                                @foreach (var tecnico in Model.Tecnicos)
+                                {
+                                    <option value="@tecnico.Value">@tecnico.Text</option>
+                                }
+                            </select>
+                            <span asp-validation-for="TecnicoResponsavelId" class="text-danger"></span>
+                        </div>
+                    </section>
+                }
+
+                <div class="order-form-actions">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class="bi bi-check-circle me-2"></i>Criar Ordem
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <!-- Scripts JavaScript modernizados -->
+    <script>
+        // Foco automático no campo título ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Foca no campo título
+            document.getElementById('Titulo').focus();
+            
+            // Adiciona efeitos visuais baseados na prioridade selecionada
+            const prioridadeSelect = document.getElementById('inputPrioridade');
+            const card = document.querySelector('.modern-card');
+            
+            if (prioridadeSelect) {
+                prioridadeSelect.addEventListener('change', function() {
+                    // Remove classes anteriores
+                    card.classList.remove('priority-baixa', 'priority-media', 'priority-alta', 'priority-critica');
+                    
+                    // Adiciona classe baseada na prioridade
+                    const prioridade = this.value.toLowerCase().replace('í', 'i').replace('é', 'e');
+                    if (prioridade) {
+                        card.classList.add(`priority-${prioridade}`);
+                    }
+                });
+            }
+            
+            // Upload de imagens com preview modernizado
+            const imageUpload = document.getElementById('imageUpload');
+            const imagePreview = document.getElementById('imagePreview');
+            const uploadContainer = document.getElementById('uploadArea');
+            
+            // Permitir clique ou Enter/espaço para abrir o seletor
+            const triggerUpload = () => imageUpload.click();
+            uploadContainer.addEventListener('click', triggerUpload);
+            uploadContainer.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    triggerUpload();
+                }
+            });
+            
+            // Efeito hover no container de upload
+            uploadContainer.addEventListener('mouseenter', function() {
+                this.style.borderColor = 'var(--primary-color)';
+                this.style.background = 'linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%)';
+            });
+            
+            uploadContainer.addEventListener('mouseleave', function() {
+                this.style.borderColor = 'var(--gray-300)';
+                this.style.background = 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)';
+            });
+            
+            // Função para validar arquivo (tipo e tamanho)
+            function validarArquivo(file) {
+                const tiposPermitidos = [
+                    'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp',
+                    'video/mp4', 'video/webm', 'video/quicktime',
+                    'application/pdf'
+                ];
+                const tamanhoMaximo = 20 * 1024 * 1024; // 20MB
+
+                if (!tiposPermitidos.includes(file.type)) {
+                    if (window.BrutalistAnimations) {
+                        window.BrutalistAnimations.showToast(`Arquivo "${file.name}" não suportado. Use Imagens, Vídeos ou PDFs.`, 'danger');
+                    } else {
+                        alert(`Arquivo "${file.name}" não suportado.`);
+                    }
+                    return false;
+                }
+
+                if (file.size > tamanhoMaximo) {
+                    if (window.BrutalistAnimations) {
+                        window.BrutalistAnimations.showToast(`Arquivo "${file.name}" excede o limite de 20MB.`, 'danger');
+                    } else {
+                        alert(`Arquivo "${file.name}" muito grande (máx 20MB).`);
+                    }
+                    return false;
+                }
+
+                return true;
+            }
+
+            // Preview das imagens selecionadas via drag/drop ou seleção
+            window.handleFiles = function(files) {
+                Array.from(files).forEach(file => {
+                    // Evita duplicatas pelo tamanho e nome antes de adicionar ao DataTransfer global
+                    let alreadyExists = false;
+                    for (let i = 0; i < window.anexosGlobais.files.length; i++) {
+                        if (window.anexosGlobais.files[i].name === file.name && window.anexosGlobais.files[i].size === file.size) {
+                            alreadyExists = true;
+                            break;
+                        }
+                    }
+                    if (!alreadyExists && validarArquivo(file)) {
+                        window.anexosGlobais.items.add(file);
+                    } else if (alreadyExists && window.BrutalistAnimations) {
+                        window.BrutalistAnimations.showToast(`Arquivo "${file.name}" já selecionado.`, 'warning');
+                    }
+                });
+
+                window.renderPreview();
+            }
+
+            window.renderPreview = function() {
+                // Atualiza o input oficial para refletir os arquivos globais acumulados
+                imageUpload.files = window.anexosGlobais.files;
+                
+                showLoading('Processando Anexos...', `Preparando ${window.anexosGlobais.files.length} arquivo(s).`);
+
+                if (window.anexosGlobais.files.length === 0) {
+                    imagePreview.innerHTML = '';
+                    hideLoading();
+                    return;
+                }
+
+                // Pequeno delay para permitir que o overlay apareça
+                setTimeout(async () => {
+                    imagePreview.innerHTML = '';
+                    const fragment = document.createDocumentFragment();
+                    
+                    const totalFiles = window.anexosGlobais.files.length;
+
+                    for (let i = 0; i < totalFiles; i++) {
+                        const file = window.anexosGlobais.files[i];
+                        const percentage = ((i + 1) / totalFiles) * 100;
+                        updateLoadingProgress(percentage);
+
+                        const previewDiv = document.createElement('div');
+                        previewDiv.className = 'position-relative';
+                        
+                        let previewContent = '';
+                        if (file.type.startsWith('image/')) {
+                            const objectUrl = URL.createObjectURL(file);
+                            previewContent = `<img src="${objectUrl}" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" onload="URL.revokeObjectURL(this.src)">`;
+                        } else if (file.type.startsWith('video/')) {
+                            previewContent = `
+                                <div class="img-thumbnail d-flex flex-column align-items-center justify-content-center bg-dark text-white text-center" style="width: 100px; height: 100px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                    <i class="bi bi-play-btn-fill" style="font-size: 1.5rem;"></i>
+                                    <span style="font-size: 0.6rem; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">VÍDEO</span>
+                                </div>`;
+                        } else if (file.type === 'application/pdf') {
+                            previewContent = `
+                                <div class="img-thumbnail d-flex flex-column align-items-center justify-content-center bg-light text-danger text-center" style="width: 100px; height: 100px; border-radius: 8px; border: 1px solid #dee2e6; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                    <i class="bi bi-file-earmark-pdf-fill" style="font-size: 1.5rem;"></i>
+                                    <span style="font-size: 0.6rem;">PDF</span>
+                                </div>`;
+                        } else {
+                            previewContent = `
+                                <div class="img-thumbnail d-flex flex-column align-items-center justify-content-center bg-light text-secondary text-center" style="width: 100px; height: 100px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                    <i class="bi bi-file-earmark-fill" style="font-size: 1.5rem;"></i>
+                                    <span style="font-size: 0.6rem;">ARQUIVO</span>
+                                </div>`;
+                        }
+
+                        previewDiv.innerHTML = `
+                            ${previewContent}
+                            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded-circle" style="width: 25px; height: 25px; padding: 0; margin: -5px;" onclick="removeImage(${i}); event.stopPropagation();">
+                                <i class="bi bi-x" style="font-size: 0.8rem;"></i>
+                            </button>
+                        `;
+                        fragment.appendChild(previewDiv);
+
+                        // Pausa mínima para permitir redenrização da interface
+                        if (totalFiles > 10 && i % 5 === 0) {
+                            await new Promise(resolve => setTimeout(resolve, 0));
+                        }
+                    }
+
+                    imagePreview.appendChild(fragment);
+                    setTimeout(hideLoading, 500);
+                }, 100);
+            }
+
+            // Input normal da galeria/arquivos
+            imageUpload.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    window.handleFiles(e.target.files);
+                }
+            });
+
+            // Input exclusivo da câmera
+            const cameraUpload = document.getElementById('cameraUpload');
+            if (cameraUpload) {
+                cameraUpload.addEventListener('change', function(e) {
+                    if (e.target.files.length > 0) {
+                        window.handleFiles(e.target.files);
+                        // Limpa para permitir tirar a mesma foto de novo (útil na câmera iOS)
+                        cameraUpload.value = "";
+                    }
+                });
+            }
+            
+            // Drag and drop para upload de imagens
+            uploadContainer.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.borderColor = 'var(--primary-color)';
+                this.style.background = 'linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%)';
+            });
+            
+            uploadContainer.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.style.borderColor = 'var(--gray-300)';
+                this.style.background = 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)';
+            });
+            
+            uploadContainer.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.borderColor = 'var(--gray-300)';
+                this.style.background = 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    window.handleFiles(files);
+                }
+            });
+        });
+        
+        // Inicializa estado global
+        window.anexosGlobais = new DataTransfer();
+
+        // Função para remover imagem do preview
+        window.removeImage = function(index) {
+            const dt = new DataTransfer();
+            
+            // Refaz a lista global pulando o apagado
+            for (let i = 0; i < window.anexosGlobais.files.length; i++) {
+                if (i !== index) {
+                    dt.items.add(window.anexosGlobais.files[i]);
+                }
+            }
+            
+            window.anexosGlobais = dt;
+            
+            // Regera a visualização a partir do global
+            if (window.renderPreview) {
+                window.renderPreview();
+            }
+        };
+    </script>
+
+    <!-- Estilos CSS adicionais para efeitos de prioridade -->
+    <style>
+        /* Animações de entrada suave */
+        .fadeInUp {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Animações de prioridade */
+        .priority-baixa {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .priority-media {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+        }
+
+        .priority-alta {
+            background: linear-gradient(135deg, #fd7e14, #dc3545);
+        }
+
+        .priority-critica {
+            background: linear-gradient(135deg, #dc3545, #6f42c1);
+            animation: pulse 2s infinite;
+        }
+
+        /* Efeitos hover para inputs e selects modernos */
+        .form-control-modern:hover,
+        .form-select-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.15);
+        }
+
+        /* Estilos para botões primários e secundários */
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+        }
+
+        .btn-outline-secondary {
+            border: 2px solid #6c757d;
+            color: #6c757d;
+            background: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-secondary:hover {
+            background: #6c757d;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        }
+    </style>
+    </script>
+}

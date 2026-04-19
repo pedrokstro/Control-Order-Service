@@ -1,0 +1,66 @@
+@model OrdemServicoMVC.ViewModels.EditUserViewModel
+
+@{
+    ViewData["Title"] = "Editar Técnico";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-user-edit"></i> @ViewData["Title"]
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <input asp-for="Id" type="hidden" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="UserName" class="form-label">Nome de Usuário</label>
+                            <input asp-for="UserName" class="form-control" placeholder="Digite o nome de usuário" />
+                            <span asp-validation-for="UserName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">Email</label>
+                            <input asp-for="Email" class="form-control" type="email" placeholder="Digite o email" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="NomeLoja" class="form-label">Nome do Técnico</label>
+                            <input asp-for="NomeLoja" class="form-control" placeholder="Digite o nome do técnico" />
+                            <span asp-validation-for="NomeLoja" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="EmailConfirmed" class="form-check-input" type="checkbox" />
+                                <label asp-for="EmailConfirmed" class="form-check-label">
+                                    Email Confirmado (Técnico Ativo)
+                                </label>
+                            </div>
+                            <span asp-validation-for="EmailConfirmed" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

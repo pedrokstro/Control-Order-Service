@@ -1,0 +1,44 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+/* Remove margem inferior do body pois o footer agora é relativo */
+body {
+  margin-bottom: 0;
+}
+
+/* Efeito de desfoque para o fundo quando modal estiver aberto */
+.modal-backdrop-blur {
+  backdrop-filter: blur(50px) saturate(200%);
+  -webkit-backdrop-filter: blur(50px) saturate(200%);
+  transition: backdrop-filter 0.3s ease-in-out;
+}
+
+/* Classe para aplicar desfoque ao conteúdo principal */
+.content-blur {
+  backdrop-filter: blur(50px) saturate(200%);
+  -webkit-backdrop-filter: blur(50px) saturate(200%);
+  transition: backdrop-filter 0.3s ease-in-out;
+}
+
+/* Melhoria no backdrop do modal para supordar o desfoque */
+.modal-backdrop {
+  backdrop-filter: blur(50px) saturate(200%);
+  -webkit-backdrop-filter: blur(50px) saturate(200%);
+  background-color: rgba(0, 0, 0, 0.9) !important;
+}

@@ -1,0 +1,8 @@
+MigrationId,ProductVersion
+20250813202902_InitialCreate,9.0.8
+20250814131305_AddIsTecnicoToApplicationUser,9.0.8
+20250814134312_AddMensagemModel,9.0.8
+20250814135123_AddAnexoModel,9.0.8
+20250818193211_AddSetorToOrdemServico,8.0.11
+20250830124324_AddIpOrigemToOrdemServico,8.0.11
+20251025121301_AddCompositeIndexes,8.0.11

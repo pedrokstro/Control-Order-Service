@@ -1,0 +1,222 @@
+@model OrdemServicoMVC.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+    Layout = "_Layout";
+    var lojaPlaceholder = (Model.Lojas != null && Model.Lojas.Count > 0)
+        ? Model.Lojas[0].Text
+        : "Selecione uma loja...";
+}
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-card-header text-center">
+            <img src="~/images/quartetto-logo.png" alt="Quartetto Supermercados" class="quartetto-logo">
+            <h5 class="login-title">Controle de Ordem de Serviço</h5>
+            <p class="login-subtitle">Acesse o painel corporativo com estabilidade e rapidez.</p>
+        </div>
+
+        <form asp-action="Login" method="post" class="login-form">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="login-field">
+                <label asp-for="LojaUsuario" class="login-label">Loja</label>
+                <div class="custom-select" data-custom-select data-placeholder="@lojaPlaceholder">
+                    <input type="hidden" asp-for="LojaUsuario" />
+                    <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+                        <span class="custom-select-value">@lojaPlaceholder</span>
+                        <span class="custom-select-icon" aria-hidden="true"></span>
+                    </button>
+                    <ul class="custom-select-options" role="listbox">
+                        @if (Model.Lojas != null)
+                        {
+                            foreach (var loja in Model.Lojas)
+                            {
+                                var optionClasses = string.IsNullOrEmpty(loja.Value) ? "custom-select-option is-placeholder" : "custom-select-option";
+                                <li class="@optionClasses" role="option" data-value="@loja.Value" tabindex="0">
+                                    @loja.Text
+                                </li>
+                            }
+                        }
+                    </ul>
+                </div>
+                <span asp-validation-for="LojaUsuario" class="text-danger"></span>
+            </div>
+
+            <div class="login-field">
+                <label asp-for="Senha" class="login-label">Senha</label>
+                <input asp-for="Senha" type="password" class="form-control login-input" placeholder="Digite sua senha">
+                <span asp-validation-for="Senha" class="text-danger"></span>
+            </div>
+
+            <div class="login-options">
+                <div class="form-check login-check">
+                    <input asp-for="LembrarMe" type="checkbox" class="form-check-input" id="rememberMe">
+                    <label asp-for="LembrarMe" class="form-check-label">Lembrar-me</label>
+                </div>
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary login-submit" data-login-submit>
+                    ENTRAR
+                </button>
+            </div>
+        </form>
+
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <div class="alert alert-danger mt-3" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                @ViewBag.ErrorMessage
+            </div>
+        }
+
+        <div class="login-security text-center">
+            <i class="bi bi-shield-check me-2"></i>
+            Sistema seguro e protegido
+        </div>
+        <div class="login-version text-center mt-2 text-muted" style="font-size: 0.85rem;">
+            <i class="bi bi-info-circle me-1"></i>
+            Versão @ViewBag.AppVersion
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const loginCard = document.querySelector('.login-card');
+            loginCard?.classList.add('fade-in');
+
+            const customSelects = document.querySelectorAll('[data-custom-select]');
+            const loginForm = document.querySelector('.login-form');
+            const submitButton = loginForm?.querySelector('[data-login-submit]');
+
+            const closeAll = (except) => {
+                customSelects.forEach(select => {
+                    if (select !== except) {
+                        select.classList.remove('is-open');
+                        const trigger = select.querySelector('.custom-select-trigger');
+                        trigger?.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            };
+
+            customSelects.forEach(select => {
+                const hiddenInput = select.querySelector('input[type="hidden"]');
+                const trigger = select.querySelector('.custom-select-trigger');
+                const valueLabel = select.querySelector('.custom-select-value');
+                const optionsList = select.querySelector('.custom-select-options');
+                const options = select.querySelectorAll('.custom-select-option');
+                const placeholder = select.dataset.placeholder || 'Selecione uma loja...';
+
+                const setActiveOption = (option) => {
+                    options.forEach(opt => {
+                        const isActive = opt === option;
+                        opt.classList.toggle('is-active', isActive);
+                        opt.setAttribute('aria-selected', isActive.toString());
+                    });
+                };
+
+                const updateValue = (option) => {
+                    if (!option) {
+                        hiddenInput.value = '';
+                        valueLabel.textContent = placeholder;
+                        setActiveOption(null);
+                        return;
+                    }
+
+                    hiddenInput.value = option.dataset.value;
+                    valueLabel.textContent = option.textContent.trim();
+                    setActiveOption(option);
+                };
+
+                if (hiddenInput.value) {
+                    const selectedOption = Array.from(options).find(opt => opt.dataset.value === hiddenInput.value);
+                    updateValue(selectedOption);
+                } else {
+                    valueLabel.textContent = placeholder;
+                }
+
+                trigger?.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    const isOpen = select.classList.toggle('is-open');
+                    trigger.setAttribute('aria-expanded', isOpen.toString());
+                    if (isOpen) {
+                        closeAll(select);
+                        const activeOption = select.querySelector('.custom-select-option.is-active') || optionsList?.querySelector('.custom-select-option:not(.is-placeholder)');
+                        activeOption?.scrollIntoView({ block: 'nearest' });
+                    }
+                });
+
+                trigger?.addEventListener('keydown', (event) => {
+                    if (['Enter', ' ', 'ArrowDown', 'ArrowUp'].includes(event.key)) {
+                        event.preventDefault();
+                        trigger.click();
+                        const focusTarget = select.querySelector('.custom-select-option.is-active') || optionsList?.querySelector('.custom-select-option:not(.is-placeholder)');
+                        focusTarget?.focus();
+                    }
+                });
+
+                options.forEach(option => {
+                    option.addEventListener('click', () => {
+                        updateValue(option);
+                        select.classList.remove('is-open');
+                        trigger?.setAttribute('aria-expanded', 'false');
+                        document.getElementById('Senha')?.focus();
+                    });
+
+                    option.addEventListener('keydown', (event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            option.click();
+                        }
+
+                        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                            event.preventDefault();
+                            const delta = event.key === 'ArrowDown' ? 1 : -1;
+                            const currentIndex = Array.from(options).indexOf(option);
+                            let nextIndex = currentIndex + delta;
+                            if (nextIndex < 0) nextIndex = options.length - 1;
+                            if (nextIndex >= options.length) nextIndex = 0;
+                            options[nextIndex]?.focus();
+                        }
+
+                        if (event.key === 'Escape') {
+                            select.classList.remove('is-open');
+                            trigger?.setAttribute('aria-expanded', 'false');
+                            trigger?.focus();
+                        }
+                    });
+                });
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!event.target.closest('[data-custom-select]')) {
+                    closeAll();
+                }
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    closeAll();
+                }
+            });
+
+            if (loginForm && submitButton) {
+                loginForm.addEventListener('submit', () => {
+                    if (!loginForm.checkValidity()) {
+                        submitButton.classList.remove('is-animating');
+                        submitButton.removeAttribute('disabled');
+                        return;
+                    }
+
+                    submitButton.classList.add('is-animating');
+                    submitButton.setAttribute('disabled', 'disabled');
+                });
+            }
+        });
+    </script>
+}

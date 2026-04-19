@@ -1,0 +1,251 @@
+@{
+    ViewData["Title"] = "Testes de Performance";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Testes de Performance - Otimizações Implementadas
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Informações sobre as otimizações -->
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle"></i> Otimizações Implementadas:</h5>
+                        <ul class="mb-0">
+                            <li><strong>Cache em Memória:</strong> Estatísticas de relatórios são armazenadas em cache por 10 minutos</li>
+                            <li><strong>Índices Compostos:</strong> Criados índices para consultas frequentes (Data+Status, Técnico+Status, etc.)</li>
+                            <li><strong>Queries Otimizadas:</strong> Uso de AsNoTracking() e projeções eficientes</li>
+                            <li><strong>LINQ Otimizado:</strong> Cálculos de estatísticas em memória após carregamento</li>
+                        </ul>
+                    </div>
+
+                    <!-- Botões de teste -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <button id="btnTestarRelatorios" class="btn btn-primary btn-block">
+                                <i class="fas fa-chart-bar"></i>
+                                Testar Cache de Relatórios
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button id="btnTestarConsultas" class="btn btn-success btn-block">
+                                <i class="fas fa-database"></i>
+                                Testar Índices Compostos
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button id="btnTestarTodos" class="btn btn-warning btn-block">
+                                <i class="fas fa-play"></i>
+                                Executar Todos os Testes
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Área de resultados -->
+                    <div id="resultados" class="row" style="display: none;">
+                        <div class="col-12">
+                            <h4>Resultados dos Testes</h4>
+                        </div>
+                        
+                        <!-- Resultado do teste de relatórios -->
+                        <div id="resultadoRelatorios" class="col-md-6" style="display: none;">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-chart-bar"></i> Cache de Relatórios</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="relatoriosContent"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resultado do teste de consultas -->
+                        <div id="resultadoConsultas" class="col-md-6" style="display: none;">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-database"></i> Índices Compostos</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="consultasContent"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loading indicator -->
+                    <div id="loading" class="text-center" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Executando testes...</span>
+                        </div>
+                        <p class="mt-2">Executando testes de performance...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    // Função para mostrar loading
+    function mostrarLoading() {
+        $('#loading').show();
+        $('#resultados').hide();
+        $('button').prop('disabled', true);
+    }
+
+    // Função para esconder loading
+    function esconderLoading() {
+        $('#loading').hide();
+        $('button').prop('disabled', false);
+    }
+
+    // Função para formatar resultado de relatórios
+    function formatarResultadoRelatorios(data) {
+        if (!data.sucesso) {
+            return `<div class="alert alert-danger">
+                        <strong>Erro:</strong> ${data.erro}
+                    </div>`;
+        }
+
+        const melhoria = data.melhoriaPercentual > 0 ? 
+            `<span class="text-success">↓ ${data.melhoriaPercentual.toFixed(1)}% mais rápido</span>` :
+            `<span class="text-warning">Sem melhoria significativa</span>`;
+
+        return `
+            <div class="alert alert-success">
+                <strong>Teste concluído com sucesso!</strong>
+            </div>
+            <table class="table table-sm">
+                <tr>
+                    <td><strong>Primeira execução (sem cache):</strong></td>
+                    <td>${data.primeiraExecucao} ms</td>
+                </tr>
+                <tr>
+                    <td><strong>Segunda execução (com cache):</strong></td>
+                    <td>${data.segundaExecucao} ms</td>
+                </tr>
+                <tr>
+                    <td><strong>Registros processados:</strong></td>
+                    <td>${data.registrosProcessados}</td>
+                </tr>
+                <tr>
+                    <td><strong>Melhoria de performance:</strong></td>
+                    <td>${melhoria}</td>
+                </tr>
+            </table>
+        `;
+    }
+
+    // Função para formatar resultado de consultas
+    function formatarResultadoConsultas(data) {
+        if (!data.sucesso) {
+            return `<div class="alert alert-danger">
+                        <strong>Erro:</strong> ${data.erro}
+                    </div>`;
+        }
+
+        return `
+            <div class="alert alert-success">
+                <strong>Consultas executadas com sucesso!</strong>
+            </div>
+            <table class="table table-sm">
+                <tr>
+                    <td><strong>Consulta Data + Status:</strong></td>
+                    <td>${data.primeiraExecucao} ms</td>
+                </tr>
+                <tr>
+                    <td><strong>Consulta Técnico + Status:</strong></td>
+                    <td>${data.segundaExecucao} ms</td>
+                </tr>
+                <tr>
+                    <td><strong>Consulta Prioridade + Status:</strong></td>
+                    <td>${data.terceiraExecucao} ms</td>
+                </tr>
+                <tr>
+                    <td><strong>Total de registros:</strong></td>
+                    <td>${data.registrosProcessados}</td>
+                </tr>
+            </table>
+            <p class="text-muted"><small>Tempos baixos indicam que os índices compostos estão funcionando corretamente.</small></p>
+        `;
+    }
+
+    // Teste de relatórios
+    $('#btnTestarRelatorios').click(function() {
+        mostrarLoading();
+        
+        $.post('@Url.Action("TestarRelatorios")')
+            .done(function(data) {
+                $('#relatoriosContent').html(formatarResultadoRelatorios(data));
+                $('#resultadoRelatorios').show();
+                $('#resultados').show();
+            })
+            .fail(function() {
+                $('#relatoriosContent').html('<div class="alert alert-danger">Erro ao executar teste</div>');
+                $('#resultadoRelatorios').show();
+                $('#resultados').show();
+            })
+            .always(function() {
+                esconderLoading();
+            });
+    });
+
+    // Teste de consultas
+    $('#btnTestarConsultas').click(function() {
+        mostrarLoading();
+        
+        $.post('@Url.Action("TestarConsultas")')
+            .done(function(data) {
+                $('#consultasContent').html(formatarResultadoConsultas(data));
+                $('#resultadoConsultas').show();
+                $('#resultados').show();
+            })
+            .fail(function() {
+                $('#consultasContent').html('<div class="alert alert-danger">Erro ao executar teste</div>');
+                $('#resultadoConsultas').show();
+                $('#resultados').show();
+            })
+            .always(function() {
+                esconderLoading();
+            });
+    });
+
+    // Todos os testes
+    $('#btnTestarTodos').click(function() {
+        mostrarLoading();
+        
+        $.post('@Url.Action("TestarTodos")')
+            .done(function(data) {
+                if (data.relatorios) {
+                    $('#relatoriosContent').html(formatarResultadoRelatorios(data.relatorios));
+                    $('#resultadoRelatorios').show();
+                }
+                
+                if (data.consultas) {
+                    $('#consultasContent').html(formatarResultadoConsultas(data.consultas));
+                    $('#resultadoConsultas').show();
+                }
+                
+                $('#resultados').show();
+            })
+            .fail(function() {
+                $('#relatoriosContent').html('<div class="alert alert-danger">Erro ao executar testes</div>');
+                $('#consultasContent').html('<div class="alert alert-danger">Erro ao executar testes</div>');
+                $('#resultadoRelatorios').show();
+                $('#resultadoConsultas').show();
+                $('#resultados').show();
+            })
+            .always(function() {
+                esconderLoading();
+            });
+    });
+});
+</script>
+}

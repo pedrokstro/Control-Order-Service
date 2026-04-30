@@ -2,7 +2,7 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // ==== IMPLEMENTAÇÃO DO BOTTOM SHEET EM MOBILE PARA SELECTS ====
-document.addEventListener('DOMContentLoaded', function() {
+window.initMobileSelects = function(externalSelects) {
     const createBottomSheetHTML = () => {
         if (document.getElementById('mobileSelectBottomSheet')) return;
         const html = `
@@ -78,11 +78,19 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Aplica o interceptador a todos os selects com class .form-select-modern ou dentro do card mobile
-    const mobileSelects = document.querySelectorAll('.order-mobile-card select, select.form-select-modern, .form-select, .form-control');
+    const mobileSelects = externalSelects || document.querySelectorAll('.order-mobile-card select, select.form-select-modern, .form-select, .form-control');
     mobileSelects.forEach(select => {
-        if (select.tagName === 'SELECT') {
+        if (select.tagName === 'SELECT' && !select.dataset.bsInitialized) {
+            select.dataset.bsInitialized = 'true';
             select.addEventListener('mousedown', handleSelectClick);
             select.addEventListener('touchstart', handleSelectClick, { passive: false });
         }
     });
-});
+};
+
+// Inicialização padrão vs Turbo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => window.initMobileSelects());
+} else {
+    window.initMobileSelects();
+}

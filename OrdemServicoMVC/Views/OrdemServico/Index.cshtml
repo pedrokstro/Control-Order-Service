@@ -792,8 +792,12 @@
 
 @section Scripts {
     <script>
-        // Consolidação de todos os event listeners DOMContentLoaded
-        document.addEventListener('DOMContentLoaded', function() {
+        // Consolidação de todos os event listeners para compatibilidade com SPA (Turbo)
+        window.initOrdemServicoIndex = function() {
+            // Previne duplicação verificando uma flag
+            const tableContainer = document.querySelector('.modern-table-container');
+            if (tableContainer && tableContainer.dataset.initialized) return;
+            if (tableContainer) tableContainer.dataset.initialized = 'true';
             // Auto-hide alerts after 5 seconds
             setTimeout(function() {
                 var alerts = document.querySelectorAll('.alert');
@@ -936,6 +940,18 @@
         // Evita que cliques em controles dentro da linha disparem o duplo clique
         document.querySelectorAll('.status-dropdown, .prioridade-dropdown, .tecnico-dropdown')
             .forEach(function(ctrl) { ctrl.addEventListener('click', function(e) { e.stopPropagation(); }); });
+        };
+
+        // Inicializa no carregamento padrão e também via Turbo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', window.initOrdemServicoIndex);
+        } else {
+            window.initOrdemServicoIndex();
+        }
+        document.addEventListener('turbo:load', function() {
+            if (document.querySelector('.modern-table-container')) {
+                window.initOrdemServicoIndex();
+            }
         });
 
         // Função para fazer a chamada AJAX com loading state melhorado

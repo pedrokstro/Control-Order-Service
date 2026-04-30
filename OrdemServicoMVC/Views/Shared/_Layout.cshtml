@@ -25,9 +25,12 @@
     <link rel="apple-touch-icon" sizes="192x192" href="~/images/pwa-icon-192.png" />
     <link rel="apple-touch-icon" sizes="512x512" href="~/images/pwa-icon-512.png" />
     
-    <!-- Favicon - ReferÃªncia explÃ­cita para garantir atualizaÃ§Ã£o -->
+    <!-- Favicon - Referência explícita para garantir atualização -->
     <link rel="icon" type="image/x-icon" href="~/favicon.ico" asp-append-version="true" />
     
+    <!-- Motor SPA Preditivo (Hotwire Turbo) -->
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@@hotwired/turbo@8.0.4/dist/turbo.es2017-umd.js"></script>
+
     <!-- Estilos para o toggle do filtro -->
     <style>
         /* BotÃ£o toggle do filtro - Cor sÃ³lida igual ao botÃ£o de configuraÃ§Ãµes */
@@ -222,6 +225,16 @@
                 padding-top: 0.75rem !important;
             }
         }
+        /* Personalizando a ProgressBar Nativa do Turbo */
+        .turbo-progress-bar {
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.7);
+            z-index: 9999;
+        }
+
+        /* Ocultar barra antiga (se sobrepor) */
+        #globalAppLoader[data-turbo="true"] { display: none !important; }
     </style>
 </head>
 <body class="has-mobile-safe-area">
@@ -521,14 +534,14 @@
     <!-- Scripts essenciais carregados imediatamente -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     
-    <!-- Sistema de Lazy Loading -->
-    <script src="~/js/lazy-loader.js" asp-append-version="true"></script>
+    <!-- Sistema de Lazy Loading (Marcados com data-turbo-eval="false" para não re-executar globais) -->
+    <script src="~/js/lazy-loader.js" asp-append-version="true" data-turbo-eval="false"></script>
     
     <!-- Carregadores de componentes específicos -->
-     <script src="~/js/components/validation-loader.js" asp-append-version="true"></script>
-     <script src="~/js/components/bootstrap-loader.js" asp-append-version="true"></script>
-     <script src="~/js/components/reports-loader.js" asp-append-version="true"></script>
-     <script src="~/js/components/image-lazy-loader.js" asp-append-version="true"></script>
+     <script src="~/js/components/validation-loader.js" asp-append-version="true" data-turbo-eval="false"></script>
+     <script src="~/js/components/bootstrap-loader.js" asp-append-version="true" data-turbo-eval="false"></script>
+     <script src="~/js/components/reports-loader.js" asp-append-version="true" data-turbo-eval="false"></script>
+     <script src="~/js/components/image-lazy-loader.js" asp-append-version="true" data-turbo-eval="false"></script>
     
     <!-- Bootstrap carregado sob demanda -->
      <script>
@@ -563,11 +576,11 @@
      </script>
     
     <!-- Scripts principais -->
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="~/js/pwa.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true" data-turbo-eval="false"></script>
+    <script src="~/js/pwa.js" asp-append-version="true" data-turbo-eval="false"></script>
     
     <!-- BRUTALIST ANIMATIONS SYSTEM -->
-    <script src="~/js/brutalist-animations.js" asp-append-version="true"></script>
+    <script src="~/js/brutalist-animations.js" asp-append-version="true" data-turbo-eval="false"></script>
     
     <!-- Tratamento global de erros para suprimir erros de extensÃµes do Chrome -->
     <script>
@@ -1094,6 +1107,35 @@
     </script>
     
     @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- Transições Micro-Interativas de NavBar -->
+    <script>
+        // Sincroniza a nav ativa durante transições do Turbo
+        document.addEventListener("turbo:load", function() {
+            const currentPath = window.location.pathname.toLowerCase();
+            document.querySelectorAll('.mobile-nav-item').forEach(el => {
+                el.classList.remove('active');
+                // Adiciona 'active' se a rota for encontrada e não for a raiz exata sem match
+                if (el.dataset.navRoute && currentPath.includes(el.dataset.navRoute.toLowerCase())) {
+                    el.classList.add('active');
+                }
+            });
+        });
+
+        // Pré-Fetch Preditivo (Carrega HTML 150ms antes do clique ser processado em mobiles)
+        document.addEventListener("touchstart", function(e) {
+            const link = e.target.closest("a");
+            if (link && link.href && link.origin === window.location.origin) {
+                if (link.dataset.prefetched) return;
+                link.dataset.prefetched = "true";
+                const prefetchLink = document.createElement("link");
+                prefetchLink.rel = "prefetch";
+                prefetchLink.href = link.href;
+                prefetchLink.as = "document";
+                document.head.appendChild(prefetchLink);
+            }
+        }, { passive: true });
+    </script>
 </body>
 </html>
 

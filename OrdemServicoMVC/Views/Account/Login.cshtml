@@ -95,15 +95,17 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        window.initLoginScripts = function() {
             const loginCard = document.querySelector('.login-card');
-            loginCard?.classList.add('fade-in');
+            if (loginCard) loginCard.classList.add('fade-in');
 
             const customSelects = document.querySelectorAll('[data-custom-select]');
             const loginForm = document.querySelector('.login-form');
             const submitButton = loginForm?.querySelector('[data-login-submit]');
 
-            const closeAll = (except) => {
+            // Como esse script pode rodar várias vezes se houver falha de validação e re-renderização do form,
+            // não podemos atrelar eventos globais 'document.addEventListener' múltiplas vezes.
+            const closeAllLocal = (except) => {
                 customSelects.forEach(select => {
                     if (select !== except) {
                         select.classList.remove('is-open');
@@ -154,7 +156,7 @@
                     const isOpen = select.classList.toggle('is-open');
                     trigger.setAttribute('aria-expanded', isOpen.toString());
                     if (isOpen) {
-                        closeAll(select);
+                        closeAllLocal(select);
                         const activeOption = select.querySelector('.custom-select-option.is-active') || optionsList?.querySelector('.custom-select-option:not(.is-placeholder)');
                         activeOption?.scrollIntoView({ block: 'nearest' });
                     }
@@ -201,18 +203,28 @@
                     });
                 });
             });
+            if (!window.loginGlobalEventsBound) {
+                window.loginGlobalEventsBound = true;
+                document.addEventListener('click', (event) => {
+                    if (!event.target.closest('[data-custom-select]')) {
+                        document.querySelectorAll('[data-custom-select]').forEach(s => {
+                            s.classList.remove('is-open');
+                            const t = s.querySelector('.custom-select-trigger');
+                            if (t) t.setAttribute('aria-expanded', 'false');
+                        });
+                    }
+                });
 
-            document.addEventListener('click', (event) => {
-                if (!event.target.closest('[data-custom-select]')) {
-                    closeAll();
-                }
-            });
-
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape') {
-                    closeAll();
-                }
-            });
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape') {
+                        document.querySelectorAll('[data-custom-select]').forEach(s => {
+                            s.classList.remove('is-open');
+                            const t = s.querySelector('.custom-select-trigger');
+                            if (t) t.setAttribute('aria-expanded', 'false');
+                        });
+                    }
+                });
+            }
 
             // --- INÍCIO LÓGICA BIOMETRIA ---
             const biometriaCheckContainer = document.getElementById('biometriaCheckContainer');
@@ -234,8 +246,23 @@
                     // Pré-seleciona a loja salva
                     const savedLoja = localStorage.getItem('cos_bio_loja');
                     if (savedLoja) {
-                        const savedOption = Array.from(options).find(opt => opt.dataset.value === savedLoja);
-                        if (savedOption) updateValue(savedOption);
+                        const savedOption = document.querySelector(`.custom-select-option[data-value="${savedLoja}"]`);
+                        if (savedOption) {
+                            const select = savedOption.closest('[data-custom-select]');
+                            if (select) {
+                                const hiddenInput = select.querySelector('input[type="hidden"]');
+                                const valueLabel = select.querySelector('.custom-select-value');
+                                
+                                hiddenInput.value = savedOption.dataset.value;
+                                valueLabel.textContent = savedOption.textContent.trim();
+                                
+                                select.querySelectorAll('.custom-select-option').forEach(opt => {
+                                    const isActive = (opt === savedOption);
+                                    opt.classList.toggle('is-active', isActive);
+                                    opt.setAttribute('aria-selected', isActive.toString());
+                                });
+                            }
+                        }
                     }
                 }
             }
@@ -345,6 +372,20 @@
                     submitButton.classList.add('is-animating');
                     submitButton.setAttribute('disabled', 'disabled');
                 });
+            }
+        };
+
+        // Inicialização SPA Preditivo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', window.initLoginScripts);
+        } else {
+            window.initLoginScripts();
+        }
+
+        // Reconecta a cada transição feita pelo Turbo
+        document.addEventListener('turbo:load', function() {
+            if (document.querySelector('.login-card')) {
+                window.initLoginScripts();
             }
         });
     </script>

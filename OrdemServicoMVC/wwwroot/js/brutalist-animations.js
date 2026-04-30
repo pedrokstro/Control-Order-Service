@@ -235,6 +235,7 @@
     } else {
         BrutalistAnimations.init();
     }
+    document.addEventListener('turbo:load', () => BrutalistAnimations.init());
 
     // Expose to global scope
     window.BrutalistAnimations = BrutalistAnimations;

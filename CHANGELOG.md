@@ -1,5 +1,14 @@
 # Changelog - Control Order Service (COS)
 
+## [2.3.28] - 2026-04-30
+### Melhorado
+- **Navegação SPA Preditiva (Turbo):** Implementada a engine Hotwire Turbo na aplicação, transformando a navegação em uma verdadeira Single Page Application (SPA).
+- **Zero Latency:** Adicionado pré-carregamento dinâmico (`touchstart`) em links, reduzindo drasticamente o tempo de percepção de troca de tela no Mobile.
+
+### Corrigido
+- **Componentes Dinâmicos (Bugfixes):** Resolvidos os conflitos de scripts (`lazy-loader`, `brutalist-animations`, `double-click` e `Select Customizado` de login) que perdiam o seu estado ou se multiplicavam ao navegar via Turbo sem recarregar o navegador.
+- **Biometria:** Ajustado o erro de escopo de variáveis no autocompletar da biometria no Login.
+
 ## [2.3.23] - 2026-04-01
 ### Fixed
 - **Performance de Anexos:** Otimizado o loop de processamento de anexos. O tempo de processamento caiu de segundos para milissegundos através da implementação de `DocumentFragment` e redução do delay de UI.

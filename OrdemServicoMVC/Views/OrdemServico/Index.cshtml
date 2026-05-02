@@ -507,13 +507,13 @@
                                                 <div class="os-label">Prioridade</div>
                                                 @if (User.IsInRole("Admin"))
                                                 {
-                                                    <select class="form-select form-select-sm prioridade-dropdown" data-ordem-id="@ordem.Id" data-current-value="@((int)ordem.Prioridade)" style="@(ordem.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Alta ? "background-color: #f8d7da; border-color: #f5c6cb; color: #721c24;" : ordem.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Media ? "background-color: #fff3cd; border-color: #ffeaa7; color: #856404;" : "background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460;")">
+                                                    <select class="ghost-select prioridade-dropdown @(ordem.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Alta ? "ghost-prioridade-Alta" : ordem.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Media ? "ghost-prioridade-Media" : "ghost-prioridade-Baixa")" data-ordem-id="@ordem.Id" data-current-value="@((int)ordem.Prioridade)">
                                                         @foreach (var prioridade in Enum.GetValues<OrdemServicoMVC.Models.PrioridadeEnum>())
                                                         {
-                                                            var prioridadeIcon = (int)prioridade == 3 ? "<i class=\"bi bi-arrow-up-circle-fill\" style=\"color: #dc3545;\"></i>" : (int)prioridade == 2 ? "<i class=\"bi bi-dash-circle-fill\" style=\"color: #ffc107;\"></i>" : "<i class=\"bi bi-arrow-down-circle-fill\" style=\"color: #0dcaf0;\"></i>";
+                                                            var prioridadeIcon = (int)prioridade == 3 ? "" : (int)prioridade == 2 ? "" : "";
                                                             if ((int)prioridade == (int)ordem.Prioridade)
                                                             {
-                                                                <option value="@((int)prioridade)" selected>@Html.Raw(prioridadeIcon) @prioridade.ToString()</option>
+                                                                <option value="@((int)prioridade)" selected> @prioridade.ToString()</option>
                                                             }
                                                             else
                                                             {
@@ -567,13 +567,13 @@
                                                 <div class="os-label">Status</div>
                                                 @if (User.IsInRole("Admin"))
                                                 {
-                                                    <select class="form-select form-select-sm status-dropdown" data-ordem-id="@ordem.Id" data-current-value="@((int)ordem.Status)" style="@(ordem.Status == OrdemServicoMVC.Models.StatusEnum.Aberta ? "background-color: #fff3cd; border-color: #ffeaa7; color: #856404;" : ordem.Status == OrdemServicoMVC.Models.StatusEnum.EmAndamento ? "background-color: #d1ecf1; border-color: #74c0fc; color: #0c5460;" : "background-color: #d4edda; border-color: #c3e6cb; color: #155724;")">
+                                                    <select class="ghost-select status-dropdown @(ordem.Status == OrdemServicoMVC.Models.StatusEnum.Aberta ? "ghost-status-Aberta" : ordem.Status == OrdemServicoMVC.Models.StatusEnum.EmAndamento ? "ghost-status-EmAndamento" : "ghost-status-Concluida")" data-ordem-id="@ordem.Id" data-current-value="@((int)ordem.Status)">
                                                         @foreach (var status in Model.StatusList)
                                                         {
-                                                            var statusIcon = status.Value == "1" ? "<i class=\"bi bi-folder2-open\"></i>" : status.Value == "2" ? "<i class=\"bi bi-gear-fill\"></i>" : "<i class=\"bi bi-check-circle-fill\"></i>";
+                                                            var statusIcon = status.Value == "1" ? "" : status.Value == "2" ? "" : "";
                                                             if (status.Value == ((int)ordem.Status).ToString())
                                                             {
-                                                                <option value="@status.Value" selected>@Html.Raw(statusIcon) @status.Text</option>
+                                                                <option value="@status.Value" selected> @status.Text</option>
                                                             }
                                                             else
                                                             {
@@ -655,12 +655,10 @@
                                     <div class="order-mobile-field-label">Prioridade</div>
                                     @if (User.IsInRole("Admin"))
                                     {
-                                        <select class="form-select form-select-sm prioridade-dropdown w-100"
-                                                data-ordem-id="@ordem.Id"
-                                                data-current-value="@((int)ordem.Prioridade)">
+                                        <select class="ghost-select prioridade-dropdown @(ordem.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Alta ? "ghost-prioridade-Alta" : ordem.Prioridade == OrdemServicoMVC.Models.PrioridadeEnum.Media ? "ghost-prioridade-Media" : "ghost-prioridade-Baixa") w-100" data-ordem-id="@ordem.Id" data-current-value="@((int)ordem.Prioridade)">
                                             @foreach (var prioridade in Enum.GetValues<OrdemServicoMVC.Models.PrioridadeEnum>())
                                             {
-                                                var prioridadeIcon = (int)prioridade == 3 ? "<i class=\"bi bi-arrow-up-circle-fill\" style=\"color: #dc3545;\"></i>" : (int)prioridade == 2 ? "<i class=\"bi bi-dash-circle-fill\" style=\"color: #ffc107;\"></i>" : "<i class=\"bi bi-arrow-down-circle-fill\" style=\"color: #0dcaf0;\"></i>";
+                                                var prioridadeIcon = (int)prioridade == 3 ? "" : (int)prioridade == 2 ? "" : "";
                                                 <option value="@((int)prioridade)" selected="@((int)prioridade == (int)ordem.Prioridade)">@prioridade.ToString()</option>
                                             }
                                         </select>
@@ -681,9 +679,7 @@
                                     <div class="order-mobile-field-label">Técnico</div>
                                     @if (User.IsInRole("Admin"))
                                     {
-                                        <select class="form-select form-select-sm tecnico-dropdown w-100"
-                                                data-ordem-id="@ordem.Id"
-                                                data-current-value="@(ordem.TecnicoResponsavelId ?? "")">
+                                        <select class="ghost-select ghost-tecnico tecnico-dropdown w-100" data-ordem-id="@ordem.Id" data-current-value="@(ordem.TecnicoResponsavelId ?? "")">
                                             @foreach (var tecnico in Model.TecnicosList)
                                             {
                                                 <option value="@tecnico.Value" selected="@(tecnico.Value == (ordem.TecnicoResponsavelId ?? ""))">@tecnico.Text</option>
@@ -701,12 +697,10 @@
                                     <div class="order-mobile-field-label">Status</div>
                                     @if (User.IsInRole("Admin"))
                                     {
-                                        <select class="form-select form-select-sm status-dropdown w-100"
-                                                data-ordem-id="@ordem.Id"
-                                                data-current-value="@((int)ordem.Status)">
+                                        <select class="ghost-select status-dropdown @(ordem.Status == OrdemServicoMVC.Models.StatusEnum.Aberta ? "ghost-status-Aberta" : ordem.Status == OrdemServicoMVC.Models.StatusEnum.EmAndamento ? "ghost-status-EmAndamento" : "ghost-status-Concluida") w-100" data-ordem-id="@ordem.Id" data-current-value="@((int)ordem.Status)">
                                             @foreach (var status in Model.StatusList)
                                             {
-                                                var statusIcon = status.Value == "1" ? "<i class=\"bi bi-folder2-open\"></i>" : status.Value == "2" ? "<i class=\"bi bi-gear-fill\"></i>" : "<i class=\"bi bi-check-circle-fill\"></i>";
+                                                var statusIcon = status.Value == "1" ? "" : status.Value == "2" ? "" : "";
                                                 <option value="@status.Value" selected="@(status.Value == ((int)ordem.Status).ToString())">@status.Text</option>
                                             }
                                         </select>

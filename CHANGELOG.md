@@ -1,5 +1,9 @@
 # Changelog - Control Order Service (COS)
 
+## [2.3.32] - 2026-05-02
+### Corrigido
+- **Unificação de Estilos Admin/User:** Corrigida a inconsistência onde os ícones SVG não apareciam nos "Ghost Selects" do Administrador. Agora, os menus suspensos de Prioridade e Status na visão Admin utilizam corretamente as classes CSS de background-image para exibir ícones contextuais, removendo conflitos de estilos inline antigos.
+
 ## [2.3.31] - 2026-05-02
 ### Corrigido
 - **Ícones em Ghost Selects:** Adicionados ícones SVG contextuais (Alta/Média/Baixa, Aberta/Em Andamento/Concluída) aos Ghost Selects via background-image CSS, resolvendo o problema de renderização de tags `<i>` dentro de opções de seleção nativas.

@@ -1,5 +1,9 @@
 # Changelog - Control Order Service (COS)
 
+## [2.3.36] - 2026-05-02
+### Adicionado
+- **Floating Action Bar (Checklist):** Implementada uma barra contextual flutuante que aparece dinamicamente na parte inferior da tela ao selecionar ordens de serviço. Isso remove a poluição visual dos filtros e centraliza as ações em massa de forma elegante e moderna.
+
 ## [2.3.35] - 2026-05-02
 ### Adicionado
 - **Premium Empty State:** Implementada uma interface moderna e elegante para quando não houver ordens de serviço (seja por filtros ou ausência de registros). Inclui animação de flutuação de ícone, sombras suaves e sugestões de ações contextuais como "Limpar Filtros" ou "Nova Ordem".

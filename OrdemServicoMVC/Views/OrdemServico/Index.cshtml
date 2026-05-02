@@ -155,9 +155,9 @@
                                                 </label>
                                                 <select class="form-select-modern" id="statusFilter" name="status" style="min-width: 140px;">
                                                     <option value="">Todos os status</option>
-                                                    <option value="1" selected="@(ViewBag.CurrentStatus?.ToString() == "1")"><i class="bi bi-folder2-open"></i> Aberta</option>
-                                                    <option value="2" selected="@(ViewBag.CurrentStatus?.ToString() == "2")"><i class="bi bi-gear-fill"></i> Em Andamento</option>
-                                                    <option value="3" selected="@(ViewBag.CurrentStatus?.ToString() == "3")"><i class="bi bi-check-circle-fill"></i> Concluída</option>
+                                                    <option value="1" selected="@(ViewBag.CurrentStatus?.ToString() == "1")">Aberta</option>
+                                                    <option value="2" selected="@(ViewBag.CurrentStatus?.ToString() == "2")">Em Andamento</option>
+                                                    <option value="3" selected="@(ViewBag.CurrentStatus?.ToString() == "3")">Concluída</option>
                                                 </select>
                                             </div>
                                             
@@ -169,9 +169,9 @@
                                                 </label>
                                                 <select class="form-select-modern" id="prioridadeFilter" name="prioridade" style="min-width: 160px;">
                                                     <option value="">Todas as Prioridades</option>
-                                                    <option value="1" selected="@(ViewBag.CurrentPrioridade?.ToString() == "1")"><i class="bi bi-arrow-down-circle-fill" style="color: #0dcaf0;"></i> Baixa</option>
-                                                    <option value="2" selected="@(ViewBag.CurrentPrioridade?.ToString() == "2")"><i class="bi bi-dash-circle-fill" style="color: #ffc107;"></i> Média</option>
-                                                    <option value="3" selected="@(ViewBag.CurrentPrioridade?.ToString() == "3")"><i class="bi bi-arrow-up-circle-fill" style="color: #dc3545;"></i> Alta</option>
+                                                    <option value="1" selected="@(ViewBag.CurrentPrioridade?.ToString() == "1")">Baixa</option>
+                                                    <option value="2" selected="@(ViewBag.CurrentPrioridade?.ToString() == "2")">Média</option>
+                                                    <option value="3" selected="@(ViewBag.CurrentPrioridade?.ToString() == "3")">Alta</option>
                                                 </select>
                                             </div>
                                             
@@ -183,7 +183,7 @@
                                                 </label>
                                                 <select class="form-select-modern" id="tecnicoFilter" name="tecnico" style="min-width: 140px;">
                                                     <option value="">Todos os Técnicos</option>
-                                                    <option value="sem_tecnico" selected="@(ViewBag.CurrentTecnico?.ToString() == "sem_tecnico")"><i class="bi bi-exclamation-triangle-fill text-warning"></i> Sem técnico</option>
+                                                    <option value="sem_tecnico" selected="@(ViewBag.CurrentTecnico?.ToString() == "sem_tecnico")">Sem técnico</option>
                                                     @if (Model.TecnicosList != null)
                                                     {
                                                         @foreach (var tecnico in Model.TecnicosList)
@@ -475,7 +475,7 @@
                                                             }
                                                             else
                                                             {
-                                                                <option value="@((int)prioridade)">@Html.Raw(prioridadeIcon) @prioridade.ToString()</option>
+                                                                <option value="@((int)prioridade)">@prioridade.ToString()</option>
                                                             }
                                                         }
                                                     </select>
@@ -535,7 +535,7 @@
                                                             }
                                                             else
                                                             {
-                                                                <option value="@status.Value">@Html.Raw(statusIcon) @status.Text</option>
+                                                                <option value="@status.Value">@status.Text</option>
                                                             }
                                                         }
                                                     </select>
@@ -619,7 +619,7 @@
                                             @foreach (var prioridade in Enum.GetValues<OrdemServicoMVC.Models.PrioridadeEnum>())
                                             {
                                                 var prioridadeIcon = (int)prioridade == 3 ? "<i class=\"bi bi-arrow-up-circle-fill\" style=\"color: #dc3545;\"></i>" : (int)prioridade == 2 ? "<i class=\"bi bi-dash-circle-fill\" style=\"color: #ffc107;\"></i>" : "<i class=\"bi bi-arrow-down-circle-fill\" style=\"color: #0dcaf0;\"></i>";
-                                                <option value="@((int)prioridade)" selected="@((int)prioridade == (int)ordem.Prioridade)">@Html.Raw(prioridadeIcon) @prioridade.ToString()</option>
+                                                <option value="@((int)prioridade)" selected="@((int)prioridade == (int)ordem.Prioridade)">@prioridade.ToString()</option>
                                             }
                                         </select>
                                     }
@@ -665,7 +665,7 @@
                                             @foreach (var status in Model.StatusList)
                                             {
                                                 var statusIcon = status.Value == "1" ? "<i class=\"bi bi-folder2-open\"></i>" : status.Value == "2" ? "<i class=\"bi bi-gear-fill\"></i>" : "<i class=\"bi bi-check-circle-fill\"></i>";
-                                                <option value="@status.Value" selected="@(status.Value == ((int)ordem.Status).ToString())">@Html.Raw(statusIcon) @status.Text</option>
+                                                <option value="@status.Value" selected="@(status.Value == ((int)ordem.Status).ToString())">@status.Text</option>
                                             }
                                         </select>
                                     }

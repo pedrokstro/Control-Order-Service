@@ -1,5 +1,9 @@
 # Changelog - Control Order Service (COS)
 
+## [2.3.31] - 2026-05-02
+### Corrigido
+- **Ícones em Ghost Selects:** Adicionados ícones SVG contextuais (Alta/Média/Baixa, Aberta/Em Andamento/Concluída) aos Ghost Selects via background-image CSS, resolvendo o problema de renderização de tags `<i>` dentro de opções de seleção nativas.
+
 ## [2.3.30] - 2026-05-02
 ### Melhorado
 - **Ghost Selects na Tabela:** Os menus dropdown para edição rápida de Status, Prioridade e Técnico na tabela (visão Admin) foram refatorados para o padrão "Ghost Select". Eles agora se parecem com badges sutis (sem bordas pesadas) mas mantêm toda a funcionalidade nativa de dropdown ao serem clicados, reduzindo drasticamente a poluição visual.

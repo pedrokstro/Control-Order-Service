@@ -13,6 +13,8 @@ obj/
 # Configurações com dados sensíveis
 appsettings.json
 appsettings.Development.json
+appsettings.Production.json
+appsettings.*.json
 
 # Diretórios de Upload/Logs/DB Files Locais (a menos que seja sqllite default)
 OrdemServicoMVC/wwwroot/uploads/

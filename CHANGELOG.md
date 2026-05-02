@@ -1,5 +1,10 @@
 # Changelog - Control Order Service (COS)
 
+## [2.3.33] - 2026-05-02
+### Adicionado
+- **Filtros Ghost Select:** Os Filtros Avançados do Administrador agora utilizam o sistema de Ghost Selects, exibindo ícones SVG e cores contextuais tanto no estado inicial quanto ao selecionar novas opções (via JavaScript dinâmico).
+- **Sincronização em Tempo Real:** Atualizada a lógica do SignalR para manter a consistência visual dos Ghost Selects mesmo após atualizações automáticas de dados.
+
 ## [2.3.32] - 2026-05-02
 ### Corrigido
 - **Unificação de Estilos Admin/User:** Corrigida a inconsistência onde os ícones SVG não apareciam nos "Ghost Selects" do Administrador. Agora, os menus suspensos de Prioridade e Status na visão Admin utilizam corretamente as classes CSS de background-image para exibir ícones contextuais, removendo conflitos de estilos inline antigos.

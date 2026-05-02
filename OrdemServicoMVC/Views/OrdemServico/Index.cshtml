@@ -48,6 +48,36 @@
         .ghost-status-Concluida { background-color: #e8f5e9; color: #2e7d32; background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2716%27%20height%3D%2716%27%20fill%3D%27%25232e7d32%27%20viewBox%3D%270%200%2016%2016%27%3E%3Cpath%20d%3D%27M16%208A8%208%200%201%201%200%208a8%208%200%200%201%2016%200zm-3.97-3.03a.75.75%200%200%200-1.08.022L7.477%209.417%205.384%207.323a.75.75%200%200%200-1.06%201.06L6.97%2011.03a.75.75%200%200%200%201.079-.02l3.992-4.99a.75.75%200%200%200-.01-1.05z%27/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%234b5563' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E"); }
         
         .ghost-tecnico { background-color: #f3f4f6; color: #4b5563; padding-left: 0.75rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%234b5563' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E"); background-position: right 0.5rem center; background-size: 10px 10px; }
+        
+        /* Estilos Neutros para Filtros */
+        .ghost-select-neutral { 
+            background-color: #f8f9fa; 
+            color: #6c757d; 
+            border-color: #dee2e6;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%236c757d' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+            background-position: right 0.5rem center;
+            background-size: 10px 10px;
+            padding-left: 0.75rem;
+        }
+
+        .ghost-filter-status { 
+            padding-left: 2.0rem;
+        }
+        
+        .ghost-filter-prioridade {
+            padding-left: 2.0rem;
+        }
+
+        /* Ajuste para selects de filtro sem ícone lateral (Loja, Setor) */
+        .ghost-select-simple {
+            padding-left: 0.75rem;
+            background-color: #f8f9fa;
+            color: #495057;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%234b5563' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+            background-position: right 0.5rem center;
+            background-size: 10px 10px;
+        }
+
 
     /* Alternância de cores entre linhas - com máxima prioridade */
     .modern-table tbody tr.modern-table-row:nth-child(odd) {
@@ -195,7 +225,7 @@
                                                     <i class="bi bi-circle-fill me-1"></i>
                                                     STATUS
                                                 </label>
-                                                <select class="form-select-modern" id="statusFilter" name="status" style="min-width: 140px;">
+                                                <select class="ghost-select ghost-filter-status @(ViewBag.CurrentStatus?.ToString() == "1" ? "ghost-status-Aberta" : ViewBag.CurrentStatus?.ToString() == "2" ? "ghost-status-EmAndamento" : ViewBag.CurrentStatus?.ToString() == "3" ? "ghost-status-Concluida" : "ghost-select-neutral")" id="statusFilter" name="status" style="min-width: 140px;">
                                                     <option value="">Todos os status</option>
                                                     <option value="1" selected="@(ViewBag.CurrentStatus?.ToString() == "1")">Aberta</option>
                                                     <option value="2" selected="@(ViewBag.CurrentStatus?.ToString() == "2")">Em Andamento</option>
@@ -209,7 +239,7 @@
                                                     <i class="bi bi-exclamation-triangle me-1"></i>
                                                     PRIORIDADE
                                                 </label>
-                                                <select class="form-select-modern" id="prioridadeFilter" name="prioridade" style="min-width: 160px;">
+                                                <select class="ghost-select ghost-filter-prioridade @(ViewBag.CurrentPrioridade?.ToString() == "1" ? "ghost-prioridade-Baixa" : ViewBag.CurrentPrioridade?.ToString() == "2" ? "ghost-prioridade-Media" : ViewBag.CurrentPrioridade?.ToString() == "3" ? "ghost-prioridade-Alta" : "ghost-select-neutral")" id="prioridadeFilter" name="prioridade" style="min-width: 160px;">
                                                     <option value="">Todas as Prioridades</option>
                                                     <option value="1" selected="@(ViewBag.CurrentPrioridade?.ToString() == "1")">Baixa</option>
                                                     <option value="2" selected="@(ViewBag.CurrentPrioridade?.ToString() == "2")">Média</option>
@@ -223,7 +253,7 @@
                                                     <i class="bi bi-person-gear me-1"></i>
                                                     TÉCNICO
                                                 </label>
-                                                <select class="form-select-modern" id="tecnicoFilter" name="tecnico" style="min-width: 140px;">
+                                                <select class="ghost-select ghost-tecnico @(string.IsNullOrEmpty(ViewBag.CurrentTecnico?.ToString()) ? "ghost-select-neutral" : "")" id="tecnicoFilter" name="tecnico" style="min-width: 140px;">
                                                     <option value="">Todos os Técnicos</option>
                                                     <option value="sem_tecnico" selected="@(ViewBag.CurrentTecnico?.ToString() == "sem_tecnico")">Sem técnico</option>
                                                     @if (Model.TecnicosList != null)
@@ -242,7 +272,7 @@
                                                     <i class="bi bi-shop me-1"></i>
                                                     LOJA
                                                 </label>
-                                                <select class="form-select-modern" id="lojaFilter" name="loja" style="min-width: 120px;">
+                                                <select class="ghost-select ghost-select-simple @(string.IsNullOrEmpty(ViewBag.CurrentLoja?.ToString()) ? "ghost-select-neutral" : "")" id="lojaFilter" name="loja" style="min-width: 120px;">
                                                     <option value="">Todas as Lojas</option>
                                                     @if (Model.LojasList != null)
                                                     {
@@ -260,7 +290,7 @@
                                                     <i class="bi bi-building me-1"></i>
                                                     SETOR
                                                 </label>
-                                                <select class="form-select-modern" id="setorFilter" name="setor" style="min-width: 140px;">
+                                                <select class="ghost-select ghost-select-simple @(string.IsNullOrEmpty(ViewBag.CurrentSetor?.ToString()) ? "ghost-select-neutral" : "")" id="setorFilter" name="setor" style="min-width: 140px;">
                                                     <option value="">Todos os Setores</option>
                                                     <!-- Setores baseados no enum SetorEnum -->
                                                     <option value="1" selected="@(ViewBag.CurrentSetor?.ToString() == "1")">Frente de Caixa</option>
@@ -1443,16 +1473,10 @@
                         const statusValue = statusMap[orderData.status] || '1';
                         statusSelect.value = statusValue;
                         
-                        // Atualiza as cores do dropdown baseado no novo status
-                        statusSelect.style.backgroundColor = 
-                            orderData.status === 'Aberta' ? '#fff3cd' :
-                            orderData.status === 'EmAndamento' ? '#d1ecf1' : '#d4edda';
-                        statusSelect.style.borderColor = 
-                            orderData.status === 'Aberta' ? '#ffeaa7' :
-                            orderData.status === 'EmAndamento' ? '#74c0fc' : '#c3e6cb';
-                        statusSelect.style.color = 
-                            orderData.status === 'Aberta' ? '#856404' :
-                            orderData.status === 'EmAndamento' ? '#0c5460' : '#155724';
+                        // Atualiza as classes ghost-select baseado no novo status
+                        statusSelect.classList.remove('ghost-status-Aberta', 'ghost-status-EmAndamento', 'ghost-status-Concluida');
+                        const statusClassName = `ghost-status-${orderData.status.replace('EmAndamento', 'EmAndamento')}`; // Just ensure correct naming
+                        statusSelect.classList.add(statusClassName);
                     }
                     
                     // Atualiza o dropdown de técnico se fornecido
@@ -1473,16 +1497,10 @@
                         const prioridadeValue = prioridadeMap[orderData.prioridade] || '2';
                         prioridadeDropdown.value = prioridadeValue;
                         
-                        // Atualiza as cores do dropdown baseado na nova prioridade
-                        prioridadeDropdown.style.backgroundColor = 
-                            orderData.prioridade === 'Alta' ? '#f8d7da' :
-                            orderData.prioridade === 'Media' ? '#fff3cd' : '#d1ecf1';
-                        prioridadeDropdown.style.borderColor = 
-                            orderData.prioridade === 'Alta' ? '#f5c6cb' :
-                            orderData.prioridade === 'Media' ? '#ffeaa7' : '#bee5eb';
-                        prioridadeDropdown.style.color = 
-                            orderData.prioridade === 'Alta' ? '#721c24' :
-                            orderData.prioridade === 'Media' ? '#856404' : '#0c5460';
+                        // Atualiza as classes ghost-select baseado na nova prioridade
+                        prioridadeDropdown.classList.remove('ghost-prioridade-Alta', 'ghost-prioridade-Media', 'ghost-prioridade-Baixa');
+                        prioridadeDropdown.classList.add(`ghost-prioridade-${orderData.prioridade}`);
+
                         
                         // Atualiza a classe CSS da linha da tabela baseada na nova prioridade
                         // Remove todas as classes de prioridade existentes
@@ -1783,4 +1801,58 @@
             btn.disabled = false;
         });
     }
-</script>
+
+    // Dynamic Filter Styles Update
+    document.addEventListener('DOMContentLoaded', function() {
+        const filters = {
+            'statusFilter': {
+                '1': 'ghost-status-Aberta',
+                '2': 'ghost-status-EmAndamento',
+                '3': 'ghost-status-Concluida',
+                'prefix': 'ghost-status-'
+            },
+            'prioridadeFilter': {
+                '1': 'ghost-prioridade-Baixa',
+                '2': 'ghost-prioridade-Media',
+                '3': 'ghost-prioridade-Alta',
+                'prefix': 'ghost-prioridade-'
+            }
+        };
+
+        Object.keys(filters).forEach(id => {
+            const select = document.getElementById(id);
+            if (select) {
+                select.addEventListener('change', function() {
+                    const val = this.value;
+                    const config = filters[id];
+                    
+                    // Remove all possible classes
+                    Object.values(config).forEach(cls => {
+                        if (typeof cls === 'string') this.classList.remove(cls);
+                    });
+                    this.classList.remove('ghost-select-neutral');
+
+                    if (val && config[val]) {
+                        this.classList.add(config[val]);
+                    } else {
+                        this.classList.add('ghost-select-neutral');
+                    }
+                });
+            }
+        });
+
+        // Simple selects (Technician, Shop, Sector)
+        ['tecnicoFilter', 'lojaFilter', 'setorFilter'].forEach(id => {
+            const select = document.getElementById(id);
+            if (select) {
+                select.addEventListener('change', function() {
+                    if (this.value) {
+                        this.classList.remove('ghost-select-neutral');
+                    } else {
+                        this.classList.add('ghost-select-neutral');
+                    }
+                });
+            }
+        });
+    });
+</script>

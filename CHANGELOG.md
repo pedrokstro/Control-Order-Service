@@ -1,5 +1,9 @@
 # Changelog - Control Order Service (COS)
 
+## [2.3.30] - 2026-05-02
+### Melhorado
+- **Ghost Selects na Tabela:** Os menus dropdown para edição rápida de Status, Prioridade e Técnico na tabela (visão Admin) foram refatorados para o padrão "Ghost Select". Eles agora se parecem com badges sutis (sem bordas pesadas) mas mantêm toda a funcionalidade nativa de dropdown ao serem clicados, reduzindo drasticamente a poluição visual.
+
 ## [2.3.29] - 2026-05-02
 ### Melhorado
 - **Design Clean na Lista de Ordens:** Remoção do uso de emojis nativos (📂, 🔴, etc.) por ícones SVG vetoriais do Bootstrap, elevando o nível de profissionalismo e padronizando a interface em todos os sistemas operacionais.

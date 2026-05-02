@@ -594,14 +594,17 @@
             }
         });
     </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
+    <script data-turbo-eval="false">
+        window.initScrollToTop = function() {
             const scrollBtn = document.getElementById('scrollToTopButton');
-            if (!scrollBtn) {
-                return;
+            if (!scrollBtn) return;
+
+            // Remove o listener antigo de scroll se existir para não dar memory leak
+            if (window.toggleScrollTopVisibility) {
+                window.removeEventListener('scroll', window.toggleScrollTopVisibility);
             }
 
-            const toggleScrollTopVisibility = () => {
+            window.toggleScrollTopVisibility = () => {
                 if (window.scrollY > 400) {
                     scrollBtn.classList.add('visible');
                 } else {
@@ -613,9 +616,17 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
 
-            window.addEventListener('scroll', toggleScrollTopVisibility);
-            toggleScrollTopVisibility();
-        });
+            window.addEventListener('scroll', window.toggleScrollTopVisibility);
+            window.toggleScrollTopVisibility();
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', window.initScrollToTop);
+        } else {
+            window.initScrollToTop();
+        }
+
+        document.addEventListener('turbo:load', window.initScrollToTop);
     </script>
 
     @if (User.Identity.IsAuthenticated)

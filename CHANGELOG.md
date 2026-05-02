@@ -1,5 +1,10 @@
 # Changelog - Control Order Service (COS)
 
+## [2.3.29] - 2026-05-02
+### Melhorado
+- **Design Clean na Lista de Ordens:** Remoção do uso de emojis nativos (📂, 🔴, etc.) por ícones SVG vetoriais do Bootstrap, elevando o nível de profissionalismo e padronizando a interface em todos os sistemas operacionais.
+- **Limpeza de UI no Mobile:** Otimizado o espaço vertical na visualização mobile, removendo permanentemente o botão de "Ver Indicadores" que conflita com a usabilidade em telas menores.
+
 ## [2.3.28] - 2026-04-30
 ### Melhorado
 - **Navegação SPA Preditiva (Turbo):** Implementada a engine Hotwire Turbo na aplicação, transformando a navegação em uma verdadeira Single Page Application (SPA).

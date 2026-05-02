@@ -97,7 +97,13 @@
     <script>
         window.initLoginScripts = function() {
             const loginCard = document.querySelector('.login-card');
-            if (loginCard) loginCard.classList.add('fade-in');
+            
+            // Previne inicialização dupla (DOMContentLoaded + turbo:load no primeiro acesso)
+            if (loginCard && loginCard.dataset.initialized === 'true') return;
+            if (loginCard) {
+                loginCard.dataset.initialized = 'true';
+                loginCard.classList.add('fade-in');
+            }
 
             const customSelects = document.querySelectorAll('[data-custom-select]');
             const loginForm = document.querySelector('.login-form');

@@ -1,5 +1,9 @@
 # Changelog - Control Order Service (COS)
 
+## [2.3.38] - 2026-05-02
+### Alterado
+- **Padronização Pill Inputs:** Os campos de "Busca Global", "Data Início" e "Data Fim" foram atualizados para o design "pill" (bordas arredondadas 50rem), garantindo uma linguagem visual única em todos os controles de filtro.
+
 ## [2.3.37] - 2026-05-02
 ### Alterado
 - **Botões de Filtro Style:** Os botões "Aplicar" e "Limpar" foram redesenhados para o estilo "pill" (totalmente arredondado), com gradientes modernos, sombras suaves e efeitos de elevação ao passar o mouse, mantendo a identidade visual de cores azul e vermelho.

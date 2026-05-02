@@ -1,5 +1,9 @@
 # Changelog - Control Order Service (COS)
 
+## [2.3.35] - 2026-05-02
+### Adicionado
+- **Premium Empty State:** Implementada uma interface moderna e elegante para quando não houver ordens de serviço (seja por filtros ou ausência de registros). Inclui animação de flutuação de ícone, sombras suaves e sugestões de ações contextuais como "Limpar Filtros" ou "Nova Ordem".
+
 ## [2.3.34] - 2026-05-02
 ### Corrigido
 - **Ícones Neutros nos Filtros:** Adicionados ícones SVG cinzas para os estados "Todos os status" e "Todas as Prioridades" nos filtros avançados, garantindo que o alinhamento visual seja mantido mesmo quando nenhum filtro específico está aplicado.

@@ -1,5 +1,9 @@
 # Changelog - Control Order Service (COS)
 
+## [2.3.34] - 2026-05-02
+### Corrigido
+- **Ícones Neutros nos Filtros:** Adicionados ícones SVG cinzas para os estados "Todos os status" e "Todas as Prioridades" nos filtros avançados, garantindo que o alinhamento visual seja mantido mesmo quando nenhum filtro específico está aplicado.
+
 ## [2.3.33] - 2026-05-02
 ### Adicionado
 - **Filtros Ghost Select:** Os Filtros Avançados do Administrador agora utilizam o sistema de Ghost Selects, exibindo ícones SVG e cores contextuais tanto no estado inicial quanto ao selecionar novas opções (via JavaScript dinâmico).

@@ -349,6 +349,44 @@
             display: none; /* Hide 'itens selecionados' on small screens */
         }
     }
+    /* Botões de Filtro Estilo Pill */
+    .btn-apply-filters {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        border: none;
+        padding: 0.6rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        transition: all 0.3s;
+    }
+
+    .btn-apply-filters:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+        color: white;
+    }
+
+    .btn-clear-filters {
+        background: linear-gradient(135deg, #dc3545 0%, #a71d2a 100%);
+        color: white;
+        border: none;
+        padding: 0.6rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        transition: all 0.3s;
+    }
+
+    .btn-clear-filters:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+        color: white;
+    }
+
+    .btn-apply-filters:active, .btn-clear-filters:active {
+        transform: translateY(0);
+    }
 </style>
 
 @if (TempData["SuccessMessage"] != null)
@@ -529,11 +567,11 @@
                                         <div class="row mt-3">
                                             <div class="col-12">
                                                 <div class="d-flex flex-wrap gap-2 justify-content-center filter-actions">
-                                                    <button type="submit" class="btn btn-apply-filters">
+                                                    <button type="submit" class="btn-apply-filters">
                                                         <i class="bi bi-search me-2"></i>
                                                         Aplicar
                                                     </button>
-                                                    <button type="button" class="btn btn-clear-filters" onclick="clearFilters()">
+                                                    <button type="button" class="btn-clear-filters" onclick="clearFilters()">
                                                         <i class="bi bi-arrow-clockwise me-2"></i>
                                                         Limpar
                                                     </button>
